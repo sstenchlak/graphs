@@ -1,0 +1,180 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-weight: 300;
+}
+
+body, #menu {
+    background: #131313;
+}
+
+#background {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+#board {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5cm;
+}
+
+#board svg {
+    width: 100%;
+    height: 100%;
+}
+
+#buttons {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    padding: 5px;
+    text-align: right;
+}
+
+.text-help {
+    position: absolute;
+    width:100%;
+    height: 5cm;
+    bottom: 0;
+    font-size: xx-large;
+    display: table;
+}
+
+.text-help p {
+    text-align: center;
+    vertical-align: middle;
+    display: table-cell;
+    font-weight: 200;
+    padding: 0 2.5%;
+}
+
+#board text {
+    alignment-baseline: central;
+    text-anchor: middle;
+}
+
+.presentation-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    background: none;
+    outline: none;
+    position: fixed;
+    bottom:0;
+    margin: 0;
+    -webkit-transition: .5s;
+    transition: .5s;
+}
+
+.presentation-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 5%;
+    height: 10px;
+    background: white;
+    cursor: pointer;
+    -webkit-transition: .5s;
+    transition: .5s;
+}
+
+.presentation-slider::-moz-range-thumb {
+    width: 5%;
+    height: 10px;
+    background: white;
+    cursor: pointer;
+    -webkit-transition: .5s;
+    transition: .5s;
+}
+
+.presentation-slider:hover, .presentation-slider:active {
+    height: 25px;
+}
+
+.presentation-slider:hover::-webkit-slider-thumb, .presentation-slider:active::-webkit-slider-thumb {
+    height: 25px;
+}
+
+.presentation-slider:hover::-moz-range-thumb, .presentation-slider:active::-moz-range-thumb {
+    height: 25px;
+}
+
+.speed-slider {
+    -webkit-appearance: none;
+    width: 6%;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.5);
+    outline: none;
+}
+
+.speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    background: white;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.speed-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    background: white;
+    opacity: 1;
+    cursor: pointer;
+}
+
+button {
+    background: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    border: 1px solid white;
+    color: white;
+}
+
+
+*:focus{
+    outline: none;
+}
+
+#menu {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 5%;
+    overflow: auto;
+}
+
+#menu button {
+    padding: 10px 20px;
+    border:  1px solid white;
+}
+
+#menu .mainmenu button {
+    float: right;
+    margin-top: 0.5cm;
+}
+
+#menu .numbermenu textarea {
+    background: none;
+    border: none;
+    width: 100%;
+    height: auto;
+    color: white;
+    font-size: 1cm;
+}

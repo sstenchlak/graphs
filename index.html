@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafové algoritmy</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,700" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+
+
+<!-- Animated background -->
+<div id="background"></div>
+
+
+<!-- SVG board -->
+<div id="board">
+    <svg>
+        <g class="scale-layer" transform="scale(1)"></g>
+    </svg>
+</div>
+
+
+<!-- Buttons in right top corner -->
+<div id="buttons">
+    <input type="range" min="1" max="1000" value="500" class="speed-slider" />
+    <button><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+    <button><i class="fa fa-backward" aria-hidden="true"></i></button>
+    <button><i class="fa fa-pause" aria-hidden="true"></i></button>
+    <button><i class="fa fa-forward" aria-hidden="true"></i></button>
+    <button><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+    <button><i class="fa fa-times" aria-hidden="true"></i></button>
+</div>
+
+
+<!-- Text area on the bottom of the page -->
+<div id="texts">
+    <div class="text-help">
+    </div>
+</div>
+
+
+<!-- Presentation slider -->
+<input type="range" min="0" max="0" value="0" class="presentation-slider">
+
+
+<!-- Overlay menu layer -->
+<!--<div id="menu">-->
+    <!--<div class="mainmenu menuitem">-->
+        <!--<h1>Vizualizace třídicích algoritmů</h1>-->
+        <!--<p>Vytvořil Štěpán Stenchlák jako zápočtovou práci do předmětu Programování na MFF UK.</p>-->
+        <!--<div class="ref" style="display: none;">-->
+            <!--<button class="start">Spustit <span class="title"></span></button>-->
+            <!--<h2 class="title">Title</h2>-->
+            <!--<p class="description">Some text...</p>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="numbermenu menuitem" style="display: none;">-->
+        <!--<h1>Ještě je potřeba vybrat prvky...</h1>-->
+        <!--<p>Pokud vám nevyhovuje počet, nebo samotná čísla, upravte si je podle sebe. Napište alespoň 5 čísel.</p>-->
+        <!--<textarea class="numbers">15 41 98 0 42 3</textarea>-->
+        <!--<button class="back">Zpět</button>-->
+        <!--<button class="run">Spustit <span class="title"></span></button>-->
+        <!--<p>Třídění můžete posouvat šipkami na obrazovce, nebo klávesnici. Dole najdete posuvník. Vpravo nahoře je možnost upravit rychlost.</p>-->
+    <!--</div>-->
+<!--</div>-->
+
+
+<!-- Scripts -->
+<script src="bundle.js"></script>
+
+
+</body>
+</html>
