@@ -7,6 +7,7 @@ interface TextActorStateInterface {
     y: number;
     color: [number, number, number];
     size: number;
+    opacity: number;
 }
 
 export class TextActor extends AbstractActor {
@@ -17,7 +18,8 @@ export class TextActor extends AbstractActor {
         x: 0,
         y: 0,
         color: [0, 0, 0],
-        size: 1
+        size: 1,
+        opacity: 0 // Default opacity is 0
     };
 
     public constructor() {
@@ -35,6 +37,7 @@ export class TextActor extends AbstractActor {
         this.element.setAttribute('x', this.state.x.toString());
         this.element.setAttribute('y', this.state.y.toString());
         this.element.setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
+        this.element.setAttribute('opacity', (this.state.opacity).toString());
         this.element.setAttribute('font-size', (this.state.size * 30).toString());
     }
 

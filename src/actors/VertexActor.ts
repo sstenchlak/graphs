@@ -10,6 +10,7 @@ export interface VertexActorStateInterface {
     color: [number, number, number];
     size: number;
     stroke: [number, number, number];
+    opacity: number;
 }
 
 export interface VertexActorPublicInformationInterface {
@@ -38,7 +39,8 @@ export class VertexActor extends AbstractActor {
         y: 0,
         color: [255, 255, 255],
         size: 1,
-        stroke: [255, 255, 255]
+        stroke: [255, 255, 255],
+        opacity: 0 // Default opacity is 0
     };
 
     public constructor() {
@@ -52,6 +54,7 @@ export class VertexActor extends AbstractActor {
         this.element = board.createSVGElement('circle');
         this.textActor = new TextActor();
         board.registerActor(this.textActor);
+        this.element.onclick = (event: MouseEvent) => {event.stopPropagation();  board.triggerClick(this)};
     }
 
     public setState(state, immediately: boolean) {
@@ -80,10 +83,11 @@ export class VertexActor extends AbstractActor {
         this.element.setAttribute('cy', y.toString());
         this.element.setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
         this.element.setAttribute('r', (this.state.size*30).toString());
+        this.element.setAttribute('opacity', (this.state.opacity).toString());
         this.element.setAttribute('stroke', 'rgb(' + Math.round(this.state.stroke[0]) + ',' + Math.round(this.state.stroke[1]) + ',' + Math.round(this.state.stroke[2]) + ')');
         this.element.setAttribute('stroke-width', (this.state.size*3).toString());
 
-        this.textActor.setState({x: x, y: y, size: this.state.size}, true, true);
+        this.textActor.setState({x: x, y: y, size: this.state.size, opacity: this.state.opacity}, true, true);
 
         this.updatePublicInformation({
             x: x,

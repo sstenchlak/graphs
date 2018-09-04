@@ -7,6 +7,7 @@ export interface EdgeActorStateInterface {
     text: string;
     color: [number, number, number];
     size: number;
+    opacity: number;
 }
 
 /**
@@ -21,7 +22,8 @@ export class EdgeActor extends AbstractActor {
     protected state: EdgeActorStateInterface = {
         text: '',
         color: [255, 255, 255],
-        size: 1
+        size: 1,
+        opacity: 0 // Default opacity is 0
     };
 
     public constructor() {
@@ -33,6 +35,14 @@ export class EdgeActor extends AbstractActor {
         this.element = board.createSVGElement('line');
         this.textActor = new TextActor();
         board.registerActor(this.textActor);
+    }
+
+    public setState(state, immediately: boolean) {
+        // update textActor
+        if ('text' in state) {
+            this.textActor.setState({text: state.text}, immediately, true);
+        }
+        super.setState(state, immediately);
     }
 
     /**
@@ -60,6 +70,15 @@ export class EdgeActor extends AbstractActor {
         this.element.setAttribute('y1', (y1 + 1.5*r1*dy/dist).toString());
         this.element.setAttribute('x2', (x2 - 1.5*r2*dx/dist).toString());
         this.element.setAttribute('y2', (y2 - 1.5*r2*dy/dist).toString());
-        this.element.setAttribute('style', 'stroke:rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ');stroke-width:' + this.state.size*3);
+        this.element.setAttribute('opacity', (this.state.opacity).toString());
+        this.element.setAttribute('style', 'stroke:rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ');stroke-width:' + this.state.size*2);
+
+        this.textActor.setState({
+            x: x1 + dx/2 + 20*dy/dist,
+            y: y1 + dy/2 - 20*dx/dist,
+            size: this.state.size/2,
+            color: this.state.color,
+            opacity: this.state.opacity
+        }, true, true);
     }
 }
