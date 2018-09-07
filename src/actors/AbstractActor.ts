@@ -19,6 +19,7 @@ export abstract class AbstractActor {
     protected animationOldState: object = {};
     protected animationTime: number = 0;
     protected animationInProgress: boolean = false;
+    protected animationCallback: Function|null = null;
 
     protected board: Board;
 
@@ -59,8 +60,9 @@ export abstract class AbstractActor {
      * @param state
      * @param immediately
      * @param doNotStopAnimation
+     * @param callback
      */
-    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false) {
+    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
         let oldState = AbstractActor.cloneObject(this.state);
         let newState = AbstractActor.cloneObject(state);
         if (!doNotStopAnimation || !immediately) {
@@ -71,12 +73,18 @@ export abstract class AbstractActor {
             for (let stateUpdater of this.stateUpdaters) {
                 stateUpdater(oldState, this.state, newState, 1);
             }
+
             this.update();
+
+            if (callback) {
+                callback();
+            }
         } else {
             this.animationNewState = newState;
             this.animationOldState = oldState;
             this.animationInProgress = true;
             this.animationTime = 0;
+            this.animationCallback = callback;
         }
     }
 
@@ -142,7 +150,17 @@ export abstract class AbstractActor {
 
             if (this.animationTime === 1) {
                 this.animationInProgress = false;
+                if (this.animationCallback) {
+                    this.animationCallback();
+                }
             }
         }
     }
+
+    /**
+     * Tries to remove element
+     * Call this function for safe delete of the current actor.
+     * @param immediately If should be removed immediately or with animation
+     */
+    abstract remove(immediately: boolean);
 }

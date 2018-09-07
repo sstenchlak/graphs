@@ -49,4 +49,19 @@ export class TextActor extends AbstractActor {
             state.text = Math.round(oldState.text + progress * (newState.text - oldState.text));
         }
     }
+
+    /**
+     * Removes this actor
+     * @param immediately If should be removed immediately or with animation
+     */
+    public remove(immediately: boolean): void {
+        this.setState({opacity: 0}, immediately, false, () => {
+            // remove HTML element
+            this.element.parentNode.removeChild(this.element);
+
+            // Disconnect from the board
+            this.board.unregisterActor(this);
+            this.board = null;
+        });
+    }
 }

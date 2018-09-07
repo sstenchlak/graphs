@@ -23,6 +23,11 @@ export class Board {
     private actors: AbstractActor[] = [];
 
     /**
+     * Vertices on the board
+     */
+    private vertices: VertexActor[] = [];
+
+    /**
      * Constructor
      * @param options
      */
@@ -48,6 +53,26 @@ export class Board {
     }
 
     /**
+     * Registers Vertex
+     * @param vertexActor
+     */
+    public registerVertex(vertexActor: VertexActor): VertexActor {
+        this.registerActor(vertexActor);
+        this.vertices.push(vertexActor);
+        return vertexActor;
+    }
+
+    /**
+     * Removes actor from list of actors
+     * @param actor
+     */
+    public unregisterActor(actor: AbstractActor): void {
+        this.actors.filter((el: AbstractActor) => {
+            return el !== actor;
+        });
+    }
+
+    /**
      * Creates an SVG element
      * @param name Element name
      */
@@ -65,7 +90,7 @@ export class Board {
         let t = (new Date()).getTime() / 1000;
         let d = last ? t - last : 0;
         for (let actor of this.actors) {
-            actor.knock(d);
+            actor.knock(d*20);
         }
         setTimeout(() => {
             this.heartBeat(t)
@@ -125,4 +150,37 @@ export class Board {
         this.selected = actor;
         return ret;
     }
+
+    private setSelectedEdgeActor(actor: EdgeActor|null): EdgeActor|null {
+
+    }
+
+    private removeVertexActor(actor: VertexActor): void {
+        // Remove all connected EdgeActors
+        for (let x of this.actors) {
+            if (x instanceof EdgeActor) {
+                if (x.getVertices().indexOf(actor) !== -1) {
+                    // Todo remove x
+                    this.removeEdgeActor(x);
+                }
+            }
+        }
+
+        // Remove the actor
+        actor.setState({opacity: 0});
+
+
+
+    }
+
+    private removeEdgeActor(actor: EdgeActor): void {
+        actor.setState({opacity: 0}, false);
+        this.actors.filter((el: AbstractActor) => {
+            return el !== actor;
+        });
+        delete actor;
+    }
+
+    // Todo: resolve how to select edge actor
+    // Todo: VertexActor does not need text
 }

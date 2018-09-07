@@ -94,4 +94,8 @@ export class BackgroundActor extends AbstractActor{
         ];
     }
 
+    public remove(immediately: boolean): void {
+        // why?
+    }
+
 }

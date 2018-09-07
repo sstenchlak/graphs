@@ -2,6 +2,7 @@ import {AbstractActor} from "./AbstractActor";
 import {Board} from "../Board";
 import {TextActor} from "./TextActor";
 import {Wave} from "../Wave";
+import {EdgeActor} from "./EdgeActor";
 
 export interface VertexActorStateInterface {
     text: string;
@@ -24,6 +25,11 @@ export class VertexActor extends AbstractActor {
     private textActor: TextActor;
 
     private waves: [Wave, Wave] = [null, null];
+
+    private connectedEdgeActors: EdgeActor[] = [];
+
+    private DEFAULT_SIZE = 15;
+    private TEXT_SIZE_RATIO = .5;
 
     protected publicInformation: VertexActorPublicInformationInterface = {
         x: 0,
@@ -57,12 +63,12 @@ export class VertexActor extends AbstractActor {
         this.element.onclick = (event: MouseEvent) => {event.stopPropagation();  board.triggerClick(this)};
     }
 
-    public setState(state, immediately: boolean) {
+    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
         // update textActor
         if ('text' in state) {
             this.textActor.setState({text: state.text}, immediately, true);
         }
-        super.setState(state, immediately);
+        super.setState(state, immediately, doNotStopAnimation, callback);
     }
 
     /**
@@ -82,22 +88,45 @@ export class VertexActor extends AbstractActor {
         this.element.setAttribute('cx', x.toString());
         this.element.setAttribute('cy', y.toString());
         this.element.setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
-        this.element.setAttribute('r', (this.state.size*30).toString());
+        this.element.setAttribute('r', (this.state.size*this.DEFAULT_SIZE).toString());
         this.element.setAttribute('opacity', (this.state.opacity).toString());
         this.element.setAttribute('stroke', 'rgb(' + Math.round(this.state.stroke[0]) + ',' + Math.round(this.state.stroke[1]) + ',' + Math.round(this.state.stroke[2]) + ')');
         this.element.setAttribute('stroke-width', (this.state.size*3).toString());
 
-        this.textActor.setState({x: x, y: y, size: this.state.size, opacity: this.state.opacity}, true, true);
+        this.textActor.setState({x: x, y: y, size: this.state.size*this.TEXT_SIZE_RATIO, opacity: this.state.opacity}, true, true);
 
         this.updatePublicInformation({
             x: x,
             y: y,
-            r: (this.state.size*30 + this.state.size*1.5)
+            r: (this.state.size*this.DEFAULT_SIZE + this.state.size*1.5)
         });
     }
 
     public getPublicInformation() {
         return this.publicInformation;
+    }
+
+    /**
+     * Removes this actor with all the Edges connected to them
+     * @param immediately If should be removed immediately or with animation
+     */
+    public remove(immediately: boolean): void {
+        // Remove connected EdgeActors
+        for (let ea of this.connectedEdgeActors) {
+            ea.remove(immediately);
+        }
+
+        this.setState({opacity: 0}, immediately, false, () => {
+            // Remove TextActor
+            this.textActor.remove(true); // Because it was animated by this
+
+            // remove HTML element
+            this.element.parentNode.removeChild(this.element);
+
+            // Disconnect from the board
+            this.board.unregisterActor(this);
+            this.board = null;
+        });
     }
 
 }

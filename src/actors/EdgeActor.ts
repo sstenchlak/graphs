@@ -37,7 +37,7 @@ export class EdgeActor extends AbstractActor {
         board.registerActor(this.textActor);
     }
 
-    public setState(state, immediately: boolean) {
+    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
         // update textActor
         if ('text' in state) {
             this.textActor.setState({text: state.text}, immediately, true);
@@ -54,6 +54,10 @@ export class EdgeActor extends AbstractActor {
         vertices[0].registerPublicInformationListener(() => {this.update()});
         vertices[1].registerPublicInformationListener(() => {this.update()});
         this.update();
+    }
+
+    public getVertices(): [VertexActor, VertexActor] {
+        return this.vertices;
     }
 
     protected update() {
@@ -80,5 +84,23 @@ export class EdgeActor extends AbstractActor {
             color: this.state.color,
             opacity: this.state.opacity
         }, true, true);
+    }
+
+    /**
+     * Removes this actor
+     * @param immediately If should be removed immediately or with animation
+     */
+    public remove(immediately: boolean): void {
+        this.setState({opacity: 0}, immediately, false, () => {
+            // Remove TextActor
+            this.textActor.remove(true); // Because it was animated by this
+
+            // remove HTML element
+            this.element.parentNode.removeChild(this.element);
+
+            // Disconnect from the board
+            this.board.unregisterActor(this);
+            this.board = null;
+        });
     }
 }
