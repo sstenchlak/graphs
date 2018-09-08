@@ -42,7 +42,7 @@ export class EdgeActor extends AbstractActor {
         if ('text' in state) {
             this.textActor.setState({text: state.text}, immediately, true);
         }
-        super.setState(state, immediately);
+        super.setState(state, immediately, doNotStopAnimation, callback);
     }
 
     /**
@@ -51,15 +51,20 @@ export class EdgeActor extends AbstractActor {
      */
     public setVertices(vertices: [VertexActor, VertexActor]): void {
         this.vertices = vertices;
+
+        vertices[0].linkEdge(this);
         vertices[0].registerPublicInformationListener(() => {this.update()});
+
+        vertices[1].linkEdge(this);
         vertices[1].registerPublicInformationListener(() => {this.update()});
+
         this.update();
     }
 
-    public getVertices(): [VertexActor, VertexActor] {
-        return this.vertices;
-    }
 
+    /**
+     * Redraws element and update text actor
+     */
     protected update() {
         let x1 = this.vertices[0].getPublicInformation().x;
         let y1 = this.vertices[0].getPublicInformation().y;
@@ -94,6 +99,10 @@ export class EdgeActor extends AbstractActor {
         this.setState({opacity: 0}, immediately, false, () => {
             // Remove TextActor
             this.textActor.remove(true); // Because it was animated by this
+
+            // Disconnect from VertexActor
+            this.vertices[0].unlinkEdge(this);
+            this.vertices[1].unlinkEdge(this);
 
             // remove HTML element
             this.element.parentNode.removeChild(this.element);

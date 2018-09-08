@@ -26,7 +26,7 @@ export class VertexActor extends AbstractActor {
 
     private waves: [Wave, Wave] = [null, null];
 
-    private connectedEdgeActors: EdgeActor[] = [];
+    public connectedEdgeActors: EdgeActor[] = [];
 
     private DEFAULT_SIZE = 15;
     private TEXT_SIZE_RATIO = .5;
@@ -106,16 +106,21 @@ export class VertexActor extends AbstractActor {
         return this.publicInformation;
     }
 
+    public linkEdge(edge: EdgeActor): void {
+        this.connectedEdgeActors.push(edge);
+    }
+
+    public unlinkEdge(edge: EdgeActor): void {
+        this.connectedEdgeActors = this.connectedEdgeActors.filter((ea: EdgeActor) => {
+            return ea !== edge;
+        });
+    }
+
     /**
-     * Removes this actor with all the Edges connected to them
+     * Removes this actor without all the Edges connected to them
      * @param immediately If should be removed immediately or with animation
      */
     public remove(immediately: boolean): void {
-        // Remove connected EdgeActors
-        for (let ea of this.connectedEdgeActors) {
-            ea.remove(immediately);
-        }
-
         this.setState({opacity: 0}, immediately, false, () => {
             // Remove TextActor
             this.textActor.remove(true); // Because it was animated by this

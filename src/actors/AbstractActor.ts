@@ -8,7 +8,6 @@ export interface stateUpdaterFunction {
  * Everything animated is an actor
  */
 export abstract class AbstractActor {
-
     protected publicInformation: Object = {};
     protected publicInformationListeners: Function[] = [];
 
@@ -105,13 +104,16 @@ export abstract class AbstractActor {
 
     /**
      * Updates actors attributes and other properties according to state
+     * Called every time state is updated
+     * Used for redraw element
      */
     protected abstract update();
 
-    protected animate () {
-
-    }
-
+    /**
+     * Helper function for cloning object
+     * Todo: Maybe remove or move to different class
+     * @param obj
+     */
     static cloneObject(obj) {
         let clone = {};
         for(let i in obj) {

@@ -40,6 +40,11 @@ export class Board {
         this.SVGPoint = this.SVG.createSVGPoint();
 
         this.SVG.addEventListener('click', (evt: MouseEvent) => {this.clickedOnBoard(evt);});
+
+        document.getElementsByClassName('remove-edge')[0].addEventListener('click', ()=>{
+            this.removeVertexActorWithEdges(this.setSelectedVertexActor(null), false);
+        });
+
     }
 
     /**
@@ -67,7 +72,7 @@ export class Board {
      * @param actor
      */
     public unregisterActor(actor: AbstractActor): void {
-        this.actors.filter((el: AbstractActor) => {
+        this.actors = this.actors.filter((el: AbstractActor) => {
             return el !== actor;
         });
     }
@@ -90,7 +95,7 @@ export class Board {
         let t = (new Date()).getTime() / 1000;
         let d = last ? t - last : 0;
         for (let actor of this.actors) {
-            actor.knock(d*20);
+            actor.knock(d);
         }
         setTimeout(() => {
             this.heartBeat(t)
@@ -152,35 +157,19 @@ export class Board {
     }
 
     private setSelectedEdgeActor(actor: EdgeActor|null): EdgeActor|null {
-
+        return null;
     }
 
-    private removeVertexActor(actor: VertexActor): void {
-        // Remove all connected EdgeActors
-        for (let x of this.actors) {
-            if (x instanceof EdgeActor) {
-                if (x.getVertices().indexOf(actor) !== -1) {
-                    // Todo remove x
-                    this.removeEdgeActor(x);
-                }
-            }
+    /**
+     * Removes VertexActor with all edges connected to it
+     * @param vertexActor
+     * @param immediately
+     */
+    private removeVertexActorWithEdges(vertexActor: VertexActor, immediately: boolean): void {
+        for (let edgeActor of vertexActor.connectedEdgeActors) {
+            edgeActor.remove(immediately);
         }
 
-        // Remove the actor
-        actor.setState({opacity: 0});
-
-
-
+        vertexActor.remove(immediately);
     }
-
-    private removeEdgeActor(actor: EdgeActor): void {
-        actor.setState({opacity: 0}, false);
-        this.actors.filter((el: AbstractActor) => {
-            return el !== actor;
-        });
-        delete actor;
-    }
-
-    // Todo: resolve how to select edge actor
-    // Todo: VertexActor does not need text
 }
