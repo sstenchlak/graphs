@@ -13,7 +13,7 @@ export class Board {
 
     private readonly HEARTBEAT_PERIOD = 1;
 
-    private selected: VertexActor|null = null;
+    private selected: VertexActor|EdgeActor|null = null;
 
     private interactive: boolean = true;
 
@@ -41,8 +41,14 @@ export class Board {
 
         this.SVG.addEventListener('click', (evt: MouseEvent) => {this.clickedOnBoard(evt);});
 
-        document.getElementsByClassName('remove-edge')[0].addEventListener('click', ()=>{
-            this.removeVertexActorWithEdges(this.setSelectedVertexActor(null), false);
+        document.getElementsByClassName('remove-selected')[0].addEventListener('click', ()=>{
+            let sel = this.setSelectedActor(null);
+
+            if (sel instanceof VertexActor) {
+                this.removeVertexActor(sel, false);
+            } else if (sel instanceof EdgeActor) {
+                this.removeEdgeActor(sel, false);
+            }
         });
 
     }
@@ -102,18 +108,26 @@ export class Board {
         }, this.HEARTBEAT_PERIOD);
     }
 
-    public triggerClick(actor: VertexActor): void {
-        if (this.selected) {
-            if (this.selected !== actor) {
+    /**
+     * Called when was clicked on AbstractActor
+     * @param actor
+     */
+    public clickedOnActor(actor: AbstractActor): void {
+        if (!this.interactive) return null;
+
+        if (actor instanceof VertexActor) {
+            if (this.selected !== actor && this.selected instanceof VertexActor) {
                 // Create new Ege
                 let e = new EdgeActor();
                 this.registerActor(e);
                 e.setVertices([this.selected, actor]);
-                e.setState({opacity: 1}, false);
+                e.setState({opacity: 1, text: "Hodnota: 8\nVisited: No"}, false);
+                this.setSelectedActor(null);
+            } else {
+                this.setSelectedActor(actor);
             }
-            this.setSelectedVertexActor(null);
-        } else {
-            this.setSelectedVertexActor(actor);
+        } else if (actor instanceof EdgeActor) {
+            this.setSelectedActor(actor);
         }
     }
 
@@ -124,7 +138,7 @@ export class Board {
     public clickedOnBoard(event: MouseEvent): void {
         if (!this.interactive) return;
 
-        if (this.setSelectedVertexActor(null)) return;
+        if (this.setSelectedActor(null)) return;
 
         this.SVGPoint.x = event.clientX;
         this.SVGPoint.y = event.clientY;
@@ -138,26 +152,30 @@ export class Board {
     }
 
     /**
-     * Selects or deselects VertexActor. Only one could be selected.
+     * Selects or deselects supported Actor. Only one could be selected.
      * @param actor
+     * @return last selected Actor
      */
-    private setSelectedVertexActor(actor: VertexActor|null): VertexActor|null {
-        if (!this.interactive) return null;
-
+    private setSelectedActor(actor: VertexActor|EdgeActor|null): VertexActor|EdgeActor|null {
         let ret = this.selected;
 
-        if (this.selected) {
-            this.selected.setState({size: 1}, false);
+        // Deselect previous
+        if (this.selected instanceof VertexActor) {
+            this.selected.setState({size: 1, color: [255, 255, 255], stroke: [255, 255, 255]}, false);
+        } else if (this.selected instanceof EdgeActor) {
+            this.selected.setState({color: [255, 255, 255]}, false);
         }
-        if (actor) {
-            actor.setState({size: 1.5}, false);
-        }
-        this.selected = actor;
-        return ret;
-    }
 
-    private setSelectedEdgeActor(actor: EdgeActor|null): EdgeActor|null {
-        return null;
+        this.selected = actor;
+
+        // Select new one
+        if (this.selected instanceof VertexActor) {
+            this.selected.setState({size: 1.5, color: [255, 255, 0], stroke: [255, 255, 0]}, false);
+        } else if (this.selected instanceof EdgeActor) {
+            this.selected.setState({color: [255, 255, 0]}, false);
+        }
+
+        return ret;
     }
 
     /**
@@ -165,11 +183,15 @@ export class Board {
      * @param vertexActor
      * @param immediately
      */
-    private removeVertexActorWithEdges(vertexActor: VertexActor, immediately: boolean): void {
+    private removeVertexActor(vertexActor: VertexActor, immediately: boolean): void {
         for (let edgeActor of vertexActor.connectedEdgeActors) {
             edgeActor.remove(immediately);
         }
 
         vertexActor.remove(immediately);
+    }
+
+    private removeEdgeActor(edgeActor: EdgeActor, immediately: boolean): void {
+        edgeActor.remove(immediately);
     }
 }
