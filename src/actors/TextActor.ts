@@ -10,8 +10,13 @@ interface TextActorStateInterface {
     opacity: number;
 }
 
+export interface TextActorPublicInformationInterface {
+    width: number;
+    height: number;
+}
+
 export class TextActor extends AbstractActor {
-    protected element:SVGElement;
+    protected element:SVGTextElement;
 
     protected state:TextActorStateInterface = {
         text: '',
@@ -22,13 +27,18 @@ export class TextActor extends AbstractActor {
         opacity: 0 // Default opacity is 0
     };
 
+    protected publicInformation: TextActorPublicInformationInterface = {
+        width: 0,
+        height: 0
+    }
+
     public constructor() {
         super();
     }
 
     connectTo(board: Board): void {
         super.connectTo(board);
-        this.element = board.createSVGElement('text');
+        this.element = <SVGTextElement>board.createSVGElement('text');
         this.stateUpdaters.push(TextActor.textActorStateUpdater);
     }
 
@@ -39,6 +49,12 @@ export class TextActor extends AbstractActor {
         this.element.setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
         this.element.setAttribute('opacity', (this.state.opacity).toString());
         this.element.setAttribute('font-size', (this.state.size * 30).toString());
+
+        let bbox = this.element.getBBox();
+        this.updatePublicInformation({
+            width: bbox.width,
+            height: bbox.height
+        });
     }
 
     /**
