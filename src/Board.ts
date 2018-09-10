@@ -51,6 +51,11 @@ export class Board {
             }
         });
 
+        let valueset = <HTMLInputElement>document.getElementsByClassName('value-set')[0];
+        valueset.addEventListener('input', ()=>{
+            this.selected.setState({text: Number(valueset.value)});
+        });
+
     }
 
     /**
@@ -170,7 +175,7 @@ export class Board {
 
         // Select new one
         if (this.selected instanceof VertexActor) {
-            this.selected.setState({size: 1.5, color: [255, 255, 0], stroke: [255, 255, 0]}, false);
+            this.selected.setState({size: 1.3, color: [255, 255, 0], stroke: [255, 255, 0]}, false);
         } else if (this.selected instanceof EdgeActor) {
             this.selected.setState({color: [255, 255, 0]}, false);
         }

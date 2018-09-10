@@ -47,6 +47,10 @@ export class EdgeActor extends AbstractActor {
         this.textActor.registerPublicInformationListener(
             (x: TextActorPublicInformationInterface) => {this.updateLinesByTextActor(x);}
         );
+        this.textActor.element.addEventListener('click', (event: MouseEvent) => {
+            event.stopPropagation();
+            board.clickedOnActor(this);
+        });
     }
 
     public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {

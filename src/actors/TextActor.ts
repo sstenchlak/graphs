@@ -16,7 +16,7 @@ export interface TextActorPublicInformationInterface {
 }
 
 export class TextActor extends AbstractActor {
-    protected element:SVGTextElement;
+    public element:SVGTextElement;
 
     protected state:TextActorStateInterface = {
         text: '',

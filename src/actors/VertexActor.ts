@@ -5,7 +5,7 @@ import {Wave} from "../Wave";
 import {EdgeActor} from "./EdgeActor";
 
 export interface VertexActorStateInterface {
-    text: string;
+    text: string|number;
     x: number;
     y: number;
     color: [number, number, number];
@@ -60,7 +60,8 @@ export class VertexActor extends AbstractActor {
         this.element = board.createSVGElement('circle');
         this.textActor = new TextActor();
         board.registerActor(this.textActor);
-        this.element.onclick = (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this)};
+        this.element.addEventListener('click', (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this);});
+        this.textActor.element.addEventListener('click', (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this);});
     }
 
     public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
