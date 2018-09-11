@@ -1,13 +1,14 @@
 import {AbstractActor} from "./AbstractActor";
 import {Board} from "../Board";
 import {TextActor, TextActorPublicInformationInterface} from "./TextActor";
-import {VertexActor, VertexActorPublicInformationInterface} from "./VertexActor";
+import {VertexActor} from "./VertexActor";
 
 export interface EdgeActorStateInterface {
     text: string;
     color: [number, number, number];
     size: number;
     opacity: number;
+    arrows: [number, number];
 }
 
 /**
@@ -15,6 +16,7 @@ export interface EdgeActorStateInterface {
  */
 export class EdgeActor extends AbstractActor {
     private lines: SVGLineElement[] = [];
+    private arrows: SVGPolygonElement[] = [];
     private textActor: TextActor;
 
     private vertices: [VertexActor, VertexActor];
@@ -23,7 +25,8 @@ export class EdgeActor extends AbstractActor {
         text: '',
         color: [255, 255, 255],
         size: 1,
-        opacity: 0 // Default opacity is 0
+        opacity: 0, // Default opacity is 0
+        arrows: [1, 1] // Default arrows opacity are 0
     };
 
     public constructor() {
@@ -37,6 +40,12 @@ export class EdgeActor extends AbstractActor {
         for (let i = 0; i < 3; i++) {
             this.lines[i] = <SVGLineElement>board.createSVGElement('line');
             this.lines[i].onclick = (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this)};
+        }
+
+        // Create arrows
+        for (let i = 0; i < 2; i++) {
+            this.arrows[i] = <SVGPolygonElement>board.createSVGElement('polygon');
+            this.arrows[i].onclick = (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this)};
         }
 
         this.lines[1].setAttribute('stroke-dasharray', '5');
@@ -114,18 +123,18 @@ export class EdgeActor extends AbstractActor {
         let padding = {x: 20, y: 20};
 
         let x = [];
-        x[0] = x1 + 1.5*r1*dx/dist;
+        x[0] = x1 + 2*r1*dx/dist;
         let px = (dx>0?1:-1)*Math.min(Math.abs(dx*(data.height+padding.y)/(2*dy)), (data.width+padding.x)/2);
         x[1] = x1 + dx/2 - px;
         x[2] = x1 + dx/2 + px;
-        x[3] = x2 - 1.5*r2*dx/dist;
+        x[3] = x2 - 2*r2*dx/dist;
 
         let y = [];
-        y[0] = y1 + 1.5*r1*dy/dist;
+        y[0] = y1 + 2*r1*dy/dist;
         let py = (dy>0?1:-1)*Math.min(Math.abs(dy*(data.width+padding.x)/(2*dx)), (data.height+padding.y)/2);
         y[1] = y1 + dy/2 - py;
         y[2] = y1 + dy/2 + py;
-        y[3] = y2 - 1.5*r2*dy/dist;
+        y[3] = y2 - 2*r2*dy/dist;
 
         for (let i = 0; i < 3; i++) {
             this.lines[i].setAttribute('x1', (x[i]).toString());
@@ -137,6 +146,27 @@ export class EdgeActor extends AbstractActor {
             this.lines[i].setAttribute('stroke', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
             this.lines[i].setAttribute('stroke-width', (this.state.size*2).toString());
 
+        }
+
+        let length = Math.sqrt(dx*dx+dy*dy);
+
+        // Update arrows
+        let arrowSize = this.state.size*10;
+        this.arrows[0].setAttribute('points',
+            (x[0] - dx/length*arrowSize).toString() + ',' + (y[0] - dy/length*arrowSize).toString() + ' ' +
+            (x[0] + dy/length*arrowSize).toString() + ',' + (y[0] - dx/length*arrowSize).toString() + ' ' +
+            (x[0] - dy/length*arrowSize).toString() + ',' + (y[0] + dx/length*arrowSize).toString()
+        );
+
+        this.arrows[1].setAttribute('points',
+            (x[3] + dx/length*arrowSize).toString() + ',' + (y[3] + dy/length*arrowSize).toString() + ' ' +
+            (x[3] + dy/length*arrowSize).toString() + ',' + (y[3] - dx/length*arrowSize).toString() + ' ' +
+            (x[3] - dy/length*arrowSize).toString() + ',' + (y[3] + dx/length*arrowSize).toString()
+        );
+
+        for (let i = 0; i < 2; i++) {
+            this.arrows[i].setAttribute('opacity', (this.state.opacity).toString());
+            this.arrows[i].setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
         }
     }
 
