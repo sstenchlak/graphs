@@ -13,6 +13,7 @@ interface TextActorStateInterface {
 export interface TextActorPublicInformationInterface {
     width: number;
     height: number;
+    set: boolean;
 }
 
 export class TextActor extends AbstractActor {
@@ -26,11 +27,6 @@ export class TextActor extends AbstractActor {
         size: 1,
         opacity: 0 // Default opacity is 0
     };
-
-    protected publicInformation: TextActorPublicInformationInterface = {
-        width: 0,
-        height: 0
-    }
 
     public constructor() {
         super();
@@ -53,7 +49,8 @@ export class TextActor extends AbstractActor {
         let bbox = this.element.getBBox();
         this.updatePublicInformation({
             width: bbox.width,
-            height: bbox.height
+            height: bbox.height,
+            set: this.state.text !== null
         });
     }
 

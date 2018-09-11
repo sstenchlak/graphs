@@ -6,6 +6,8 @@ export class Wave {
     private time: number = 0;
     private total: number;
 
+    private readonly SPEED_MULTIPLIER = 0.3;
+
     public constructor() {
         this.generateNewDirection();
     }
@@ -24,7 +26,7 @@ export class Wave {
     }
 
     public getNextValue(time: number): number {
-        this.time += time;
+        this.time += time*this.SPEED_MULTIPLIER;
         if (this.time > this.total) {
             this.time %= this.total;
             this.generateNewDirection();

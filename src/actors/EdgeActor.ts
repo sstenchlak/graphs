@@ -19,14 +19,14 @@ export class EdgeActor extends AbstractActor {
     private arrows: SVGPolygonElement[] = [];
     private textActor: TextActor;
 
-    private vertices: [VertexActor, VertexActor];
+    public vertices: [VertexActor, VertexActor];
 
     protected state: EdgeActorStateInterface = {
         text: '',
         color: [255, 255, 255],
         size: 1,
         opacity: 0, // Default opacity is 0
-        arrows: [1, 1] // Default arrows opacity are 0
+        arrows: [0, 0] // Default arrows opacity are 0
     };
 
     public constructor() {
@@ -120,7 +120,7 @@ export class EdgeActor extends AbstractActor {
 
         let dist = Math.sqrt(dx*dx + dy*dy);
 
-        let padding = {x: 20, y: 20};
+        let padding = data.set ? {x: 20, y: 20} : {x: 0, y: 0};
 
         let x = [];
         x[0] = x1 + 2*r1*dx/dist;
@@ -165,7 +165,7 @@ export class EdgeActor extends AbstractActor {
         );
 
         for (let i = 0; i < 2; i++) {
-            this.arrows[i].setAttribute('opacity', (this.state.opacity).toString());
+            this.arrows[i].setAttribute('opacity', (this.state.opacity*this.state.arrows[i]).toString());
             this.arrows[i].setAttribute('fill', 'rgb(' + Math.round(this.state.color[0]) + ',' + Math.round(this.state.color[1]) + ',' + Math.round(this.state.color[2]) + ')');
         }
     }
@@ -175,10 +175,12 @@ export class EdgeActor extends AbstractActor {
      * @param immediately If should be removed immediately or with animation
      */
     public remove(immediately: boolean): void {
+        console.log("ReMoViNg");
+
         this.setState({opacity: 0}, immediately, false, () => {
             // Remove TextActor
             this.textActor.remove(true); // Because it was animated by this
-
+console.log("ReMoVeD");
             // Disconnect from VertexActor
             this.vertices[0].unlinkEdge(this);
             this.vertices[1].unlinkEdge(this);
@@ -186,6 +188,9 @@ export class EdgeActor extends AbstractActor {
             // remove HTML element
             for (let i = 0; i < 3; i++) {
                 this.lines[i].parentNode.removeChild(this.lines[i]);
+            }
+            for (let i = 0; i < 2; i++) {
+                this.arrows[i].parentNode.removeChild(this.arrows[i]);
             }
 
             // Disconnect from the board

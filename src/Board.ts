@@ -1,6 +1,7 @@
 import {AbstractActor} from "./actors/AbstractActor";
 import {VertexActor} from "./actors/VertexActor";
 import {EdgeActor} from "./actors/EdgeActor";
+import {Application} from "./Application";
 
 /**
  * Theater for Actors
@@ -10,10 +11,12 @@ export class Board {
     private SVGActorLayer: SVGGElement;
     public backgroundElement: HTMLElement;
     private SVGPoint: SVGPoint;
+    private application: Application;
 
     private readonly HEARTBEAT_PERIOD = 1;
+    private readonly HEARTBEAT_MULTIPLIER = 2;
 
-    private selected: VertexActor|EdgeActor|null = null;
+    public selected: VertexActor|EdgeActor|null = null;
 
     private interactive: boolean = true;
 
@@ -36,26 +39,11 @@ export class Board {
         this.SVG = options.SVG;
         this.SVGActorLayer = options.SVGActorLayer;
         this.backgroundElement = options.backgroundElement;
+        this.application = options.application;
 
         this.SVGPoint = this.SVG.createSVGPoint();
 
         this.SVG.addEventListener('click', (evt: MouseEvent) => {this.clickedOnBoard(evt);});
-
-        document.getElementsByClassName('remove-selected')[0].addEventListener('click', ()=>{
-            let sel = this.setSelectedActor(null);
-
-            if (sel instanceof VertexActor) {
-                this.removeVertexActor(sel, false);
-            } else if (sel instanceof EdgeActor) {
-                this.removeEdgeActor(sel, false);
-            }
-        });
-
-        let valueset = <HTMLInputElement>document.getElementsByClassName('value-set')[0];
-        valueset.addEventListener('input', ()=>{
-            this.selected.setState({text: Number(valueset.value)});
-        });
-
     }
 
     /**
@@ -106,7 +94,7 @@ export class Board {
         let t = (new Date()).getTime() / 1000;
         let d = last ? t - last : 0;
         for (let actor of this.actors) {
-            actor.knock(d);
+            actor.knock(d*this.HEARTBEAT_MULTIPLIER);
         }
         setTimeout(() => {
             this.heartBeat(t)
@@ -123,17 +111,48 @@ export class Board {
         if (actor instanceof VertexActor) {
             if (this.selected !== actor && this.selected instanceof VertexActor) {
                 // Create new Ege
-                let e = new EdgeActor();
-                this.registerActor(e);
-                e.setVertices([this.selected, actor]);
-                e.setState({opacity: 1, text: "Hodnota: 8\nVisited: No"}, false);
-                this.setSelectedActor(null);
+                let res = this.safeCreateEdge([this.selected, actor]);
+
+                if (res.created) {
+                    this.setSelectedActor(null);
+                    res.edge.setState({opacity: 1});
+                } else {
+                    this.setSelectedActor(res.edge);
+                }
             } else {
                 this.setSelectedActor(actor);
             }
         } else if (actor instanceof EdgeActor) {
             this.setSelectedActor(actor);
         }
+    }
+
+    /**
+     * Tries to create an EdgeActor connecting two VertexActors. If already exists, returns it.
+     * @param vertices
+     * @param created
+     */
+    public safeCreateEdge(vertices: [VertexActor, VertexActor]): {edge: EdgeActor, created: boolean} {
+        // In case the edge is already exists
+        for (let edge of vertices[0].connectedEdgeActors) {
+            for (let vertex of edge.vertices) {
+                if (vertex == vertices[1]) {
+                    return {
+                        edge: edge,
+                        created: false
+                    };
+                }
+            }
+        }
+
+        // If not, create new
+        let e = new EdgeActor();
+        this.registerActor(e);
+        e.setVertices(vertices);
+        return {
+            edge: e,
+            created: true
+        };
     }
 
     /**
@@ -176,8 +195,12 @@ export class Board {
         // Select new one
         if (this.selected instanceof VertexActor) {
             this.selected.setState({size: 1.3, color: [255, 255, 0], stroke: [255, 255, 0]}, false);
+            this.application.openVertexPanel();
         } else if (this.selected instanceof EdgeActor) {
             this.selected.setState({color: [255, 255, 0]}, false);
+            this.application.openEdgePanel(this.selected.getState('text'));
+        } else if (!this.selected) {
+            this.application.closeAllPanels();
         }
 
         return ret;
@@ -188,15 +211,26 @@ export class Board {
      * @param vertexActor
      * @param immediately
      */
-    private removeVertexActor(vertexActor: VertexActor, immediately: boolean): void {
+    public removeVertexActor(vertexActor: VertexActor, immediately: boolean = false): void {
         for (let edgeActor of vertexActor.connectedEdgeActors) {
             edgeActor.remove(immediately);
         }
 
         vertexActor.remove(immediately);
+        this.setSelectedActor(null);
     }
 
-    private removeEdgeActor(edgeActor: EdgeActor, immediately: boolean): void {
+    /**
+     * Removes EdgeActor
+     * @param edgeActor
+     * @param immediately
+     */
+    public removeEdgeActor(edgeActor: EdgeActor, immediately: boolean = false): void {
         edgeActor.remove(immediately);
+        this.setSelectedActor(null);
+    }
+
+    public setValueToSelectedEdgeActor(v: number): void {
+        (<EdgeActor>this.selected).setState({text: v});
     }
 }

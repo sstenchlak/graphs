@@ -45,7 +45,9 @@ export abstract class AbstractActor {
      */
     public static simpleMapState(oldState, state, newState, progress: number) {
         for (let index in newState) {
-            if (typeof oldState[index] === 'object')
+            if (oldState[index] === null)
+                state[index] = newState[index];
+            else if (typeof oldState[index] === 'object')
                 AbstractActor.simpleMapState(oldState[index], state[index], newState[index], progress);
             else if (typeof oldState[index] == 'number' && typeof newState[index] == 'number')
                 state[index] = oldState[index] + progress * (newState[index] - oldState[index]);
@@ -83,7 +85,9 @@ export abstract class AbstractActor {
             this.animationOldState = oldState;
             this.animationInProgress = true;
             this.animationTime = 0;
-            this.animationCallback = callback;
+            if (callback) {
+                this.animationCallback = callback;
+            }
         }
     }
 
@@ -165,4 +169,24 @@ export abstract class AbstractActor {
      * @param immediately If should be removed immediately or with animation
      */
     abstract remove(immediately: boolean);
+
+    /**
+     * Return state (not actual caused by animation, but final)
+     * @param value or null
+     */
+    public getState(value: string|null): any {
+        if (this.animationInProgress) {
+            if (value) {
+                return {...this.state, ...this.animationNewState}[value];
+            } else {
+                return {...this.state, ...this.animationNewState};
+            }
+        } else {
+            if (value) {
+                return this.state[value];
+            } else {
+                return this.state;
+            }
+        }
+    }
 }
