@@ -21,6 +21,40 @@
     </svg>
 </div>
 
+<!-- Side panel -->
+<div id="panel">
+    <div id="edge-selected" class="property-panel">
+        <div class="panel">
+            <div class="title">Hodnota hrany:</div>
+            <input type="number" value="0" class="value-set"/>
+            <button class="remove-value">Smazat hodnotu</button>
+        </div>
+        <div class="panel">
+            <div class="title">Orientace hrany:</div>
+            <button class="set-orientation-none">Neorientovaná</button>
+            <button class="set-orientation-positive">Kladně</button>
+            <button class="set-orientation-negative">Záporně</button>
+        </div>
+        <div class="panel">
+            <div class="title">Další možnosti:</div>
+            <button class="remove">Smazat hranu</button>
+        </div>
+    </div>
+
+    <div id="vertex-selected" class="property-panel">
+        <div class="panel">
+            <div class="title">Možnosti:</div>
+            <button class="remove">Smazat vrchol</button>
+        </div>
+    </div>
+
+    <h1>Grafové algoritmy</h1>
+    <div>
+        <p>Kliknutím na volné místo v levé části obrazovky vytvoříte nový vrchol. Kliknutím navrchol se konkrétní vrchol zvětší a zobrazí se nabídkla vpravo dole, kde můžete upravit jeho hodnotu. Kliknutím na jiný vrchol s ním vytvoříte hranu. Hranu smažete, jestliže operaci provedete znova.</p>
+    </div>
+</div>
+
+
 
 <!-- Buttons in right top corner -->
 <div id="buttons">
@@ -31,13 +65,6 @@
     <button><i class="fa fa-forward" aria-hidden="true"></i></button>
     <button><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
     <button><i class="fa fa-times" aria-hidden="true"></i></button>
-</div>
-
-
-<!-- Text area on the bottom of the page -->
-<div id="texts">
-    <div class="text-help">
-    </div>
 </div>
 
 

@@ -110,7 +110,7 @@ export class Application {
         });
 
         // Create some graph
-        //this.loadGraphFromData(this.graphExaple);
+        this.loadGraphFromData(this.graphExaple);
     }
 
     public openVertexPanel(): void {
