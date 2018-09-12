@@ -16,92 +16,106 @@
 
 <!-- SVG board -->
 <div id="board">
-    <svg>
-        <g class="scale-layer" transform="scale(1)"></g>
+    <svg id="svg">
+        <g id="svg-layer" transform="scale(1)"></g>
     </svg>
 </div>
 
 <!-- Side panel -->
 <div id="panel">
-    <div id="hint">
-        Blablabla
+    <!-- Buttons in right top corner -->
+    <div id="buttons" class="panel">
+        <input id="presentation-speed" type="range" min="1" max="1000" value="500" class="speed-slider" />
+        <button id="presentation-begin"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+        <button id="presentation-back"><i class="fa fa-backward" aria-hidden="true"></i></button>
+        <button id="presentation-play-pause"><i class="fa fa-pause" aria-hidden="true"></i></button>
+        <button id="presentation-forward"><i class="fa fa-forward" aria-hidden="true"></i></button>
+        <button id="presentation-end"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+        <button id="presentation-stop"><i class="fa fa-times" aria-hidden="true"></i></button>
     </div>
-    <div id="edge-selected" class="property-panel">
-        <div class="panel">
+
+    <!-- Hint -->
+    <div id="hint" class="panel">
+        Sousední vrcholy, které byly uzavřené otevřeme a nastavíme jim hodnotu rovnou hodnotě aktuálního vrcholu + hodnotě hrany. Pokud byl nějaký vrchol již otevřen a měl by dostat hodnotu menší, než má aktuální, tak ji aktualizujeme.
+    </div>
+
+    <!-- Editor panel - edge -->
+    <div id="edge" class="panel">
+        <h2>Úprava hrany</h2>
+        <div class="subpanel">
             <div class="title">Hodnota hrany:</div>
-            <input type="number" value="0" class="value-set"/>
-            <button class="remove-value">Smazat hodnotu</button>
+            <input id="edge-value" type="number" value="0"/>
+            <button id="edge-remove-value">Smazat hodnotu</button>
         </div>
-        <div class="panel">
+        <div class="subpanel">
             <div class="title">Orientace hrany:</div>
-            <button class="set-orientation-none">Neorientovaná</button>
-            <button class="set-orientation-positive">Kladně</button>
-            <button class="set-orientation-negative">Záporně</button>
+            <button id="edge-orientation-none">Neorientovaná</button>
+            <button id="edge-orientation-positive">Kladně</button>
+            <button id="edge-orientation-negative">Záporně</button>
         </div>
-        <div class="panel">
+        <div class="subpanel">
             <div class="title">Další možnosti:</div>
-            <button class="remove">Smazat hranu</button>
+            <button id="edge-remove">Smazat hranu</button>
         </div>
     </div>
 
-    <div id="vertex-selected" class="property-panel">
-        <div class="panel">
+    <!-- Editor panel vertex -->
+    <div id="vertex" class="panel">
+        <h2>Úprava vrcholu</h2>
+        <div class="subpanel">
             <div class="title">Možnosti:</div>
-            <button class="remove">Smazat vrchol</button>
+            <button id="vertex-remove">Smazat vrchol</button>
         </div>
     </div>
 
-    <h1>Grafové algoritmy</h1>
-    <div>
-        <p>Kliknutím na volné místo v levé části obrazovky vytvoříte nový vrchol. Kliknutím navrchol se konkrétní vrchol zvětší a zobrazí se nabídkla vpravo dole, kde můžete upravit jeho hodnotu. Kliknutím na jiný vrchol s ním vytvoříte hranu. Hranu smažete, jestliže operaci provedete znova.</p>
+    <!-- Editor panel vertex -->
+    <div id="vertex-select-panel" class="panel">
+        <h2>Kliknutím vyberte vrchol</h2>
+        <p></p>
+        <button id="vertex-select-dismiss">Zrušit</button>
     </div>
 
-    <button id="do-a-shit">Spustit nejaky algoritmus</button>
+    <!-- Title panel -->
+    <div id="welcome" class="panel">
+        <h1>Grafové algoritmy</h1>
+        <p>
+            Snadná vizualizace fungování některých grafových algoritmů na libovolném grafu.
+        </p>
+        <p>
+            Kliknutím na prázdné místo v levé části obrazovky vytvoříte nový vrchol.
+            Kliknutím na vrchol se vrchol označí.
+            Následným kliknutím na jiný vrchol vytvoříte hranu. Pokud již hrana existuje, vyberete ji.
+            Hranám můžete nastavit směr a hodnotu, která je potřebná pro některé algoritmy.
+            Vybrané prvky můžete mazat také klávesou <i>delete</i>.
+        </p>
+        <p>Vytvořeno jako zápočtový program Štěpánem Stenchlákem do předmětu Programování II na Matematicko-Fyzikální Fakultě Univerzity Karlovy.</p>
+    </div>
+
+    <!-- Algorithm list panel -->
+    <div id="algorithms" class="panel">
+        <h2>Dostupné algoritmy</h2>
+        <div id="single-algorithm" class="algorithm">
+            <h3></h3>
+            <p></p>
+            <button>Spustit <span></span>!</button>
+        </div>
+    </div>
 </div>
-
-
-
-<!-- Buttons in right top corner -->
-<div id="buttons">
-    <input type="range" min="1" max="1000" value="500" class="speed-slider" />
-    <button><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
-    <button><i class="fa fa-backward" aria-hidden="true"></i></button>
-    <button><i class="fa fa-pause" aria-hidden="true"></i></button>
-    <button><i class="fa fa-forward" aria-hidden="true"></i></button>
-    <button><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
-    <button><i class="fa fa-times" aria-hidden="true"></i></button>
-</div>
-
 
 <!-- Presentation slider -->
-<input type="range" min="0" max="0" value="0" class="presentation-slider">
+<input type="range" min="0" max="0" value="0" id="progressbar">
 
-
-<!-- Overlay menu layer -->
-<!--<div id="menu">-->
-    <!--<div class="mainmenu menuitem">-->
-        <!--<h1>Vizualizace třídicích algoritmů</h1>-->
-        <!--<p>Vytvořil Štěpán Stenchlák jako zápočtovou práci do předmětu Programování na MFF UK.</p>-->
-        <!--<div class="ref" style="display: none;">-->
-            <!--<button class="start">Spustit <span class="title"></span></button>-->
-            <!--<h2 class="title">Title</h2>-->
-            <!--<p class="description">Some text...</p>-->
-        <!--</div>-->
-    <!--</div>-->
-    <!--<div class="numbermenu menuitem" style="display: none;">-->
-        <!--<h1>Ještě je potřeba vybrat prvky...</h1>-->
-        <!--<p>Pokud vám nevyhovuje počet, nebo samotná čísla, upravte si je podle sebe. Napište alespoň 5 čísel.</p>-->
-        <!--<textarea class="numbers">15 41 98 0 42 3</textarea>-->
-        <!--<button class="back">Zpět</button>-->
-        <!--<button class="run">Spustit <span class="title"></span></button>-->
-        <!--<p>Třídění můžete posouvat šipkami na obrazovce, nebo klávesnici. Dole najdete posuvník. Vpravo nahoře je možnost upravit rychlost.</p>-->
-    <!--</div>-->
-<!--</div>-->
+<!-- Error messages -->
+<div id="error" style="display: none;">
+    <div>
+        <div id="error-message"></div>
+        <button id="error-hide">Rozumím</button>
+    </div>
+</div>
 
 
 <!-- Scripts -->
 <script src="bundle.js"></script>
-
 
 </body>
 </html>

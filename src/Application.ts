@@ -5,6 +5,8 @@ import {VertexActor} from "./actors/VertexActor";
 import {AbstractActor} from "./actors/AbstractActor";
 import {HintActor} from "./actors/HintActor";
 import {Presenter} from "./Presenter";
+import {AbstractAlgorithm} from "./algorithm/AbstractAlgorithm";
+import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
 
 export interface GraphStructureInterface {
     vertices: Object[],
@@ -16,11 +18,9 @@ export interface GraphStructureInterface {
  */
 export class Application {
 
-    private vertexSelectedPanel: HTMLElement;
-    private vertexPanelValue: HTMLInputElement;
-    private edgeSelectedPanel: HTMLElement;
-
     private board: Board;
+
+    private presenter: Presenter;
 
     private graphExaple: GraphStructureInterface = {
         vertices: [
@@ -52,18 +52,23 @@ export class Application {
         ]
     };
 
+    /**
+     * List of all supported algorithms by its classes
+     * (should extends AbstractAlgorithm)
+     */
+    private algorithmsList = [
+        DijkstrasAlgorithm
+    ];
+
     public constructor() {
-        this.vertexSelectedPanel = document.getElementById('vertex-selected');
-        this.edgeSelectedPanel = document.getElementById('edge-selected');
-        this.vertexPanelValue = <HTMLInputElement>this.edgeSelectedPanel.getElementsByClassName('value-set')[0];
 
         // Creates board
         this.board = new Board({
-            SVG: document.querySelector('#board svg'),
-            SVGActorLayer: document.getElementById('board').querySelector('.scale-layer'),
+            SVG: document.getElementById('svg'),
+            SVGActorLayer: document.getElementById('svg-layer'),
             backgroundElement: document.getElementById('background'),
             application: this,
-            hintElement: document.getElementById("hint")
+            hintElement: document.getElementById("hint"),
         });
 
         // Register background
@@ -75,31 +80,31 @@ export class Application {
         this.board.registerSpecialActor('hint', hint);
 
         // Register buttons in EdgePanel
-        this.edgeSelectedPanel.getElementsByClassName('remove')[0].addEventListener('click', ()=>{
+        document.getElementById('edge-remove').addEventListener('click', ()=>{
             this.board.removeEdgeActor(<EdgeActor>this.board.selected);
         });
-        this.vertexPanelValue.addEventListener('input', ()=>{
-            this.board.selected.setState({text: Number(this.vertexPanelValue.value)});
+        document.getElementById('edge-value').addEventListener('input', ()=>{
+            this.board.selected.setState({text: Number(document.getElementById('edge-value'))});
         });
-        this.edgeSelectedPanel.getElementsByClassName('remove-value')[0].addEventListener('click', ()=>{
+        document.getElementById('edge-remove-value').addEventListener('click', ()=>{
             this.board.selected.setState({text: null});
-            this.vertexPanelValue.value = null;
+            (<HTMLInputElement>document.getElementById('edge-value')).value = null;
         });
 
         let orientations = {
-            'set-orientation-none': [0, 0],
-            'set-orientation-positive': [1, 0],
-            'set-orientation-negative': [0, 1]
+            'edge-orientation-none': [0, 0],
+            'edge-orientation-positive': [1, 0],
+            'edge-orientation-negative': [0, 1]
         };
 
         for (let key in orientations) {
-            this.edgeSelectedPanel.getElementsByClassName(key)[0].addEventListener('click', ()=>{
+            document.getElementById(key).addEventListener('click', ()=>{
                 this.board.selected.setState({arrows: orientations[key]});
             });
         }
 
         // Register buttons in vertex panel
-        this.vertexSelectedPanel.getElementsByClassName('remove')[0].addEventListener('click', ()=>{
+        document.getElementById('vertex-remove').addEventListener('click', ()=>{
             this.board.removeVertexActor(<VertexActor>this.board.selected);
         });
 
@@ -119,27 +124,145 @@ export class Application {
         // Create some graph
         this.loadGraphFromData(this.graphExaple);
 
-        // Bind do a shit
-        document.getElementById('do-a-shit').addEventListener('click', ()=>{
-            this.board.createPresenter();
+        // Register error close button
+        document.getElementById('error-hide').addEventListener('click', ()=>{
+            document.getElementById('error').style.display = 'none';
         });
+
+        // Bind do a shit
+        // document.getElementById('do-a-shit').addEventListener('click', ()=>{
+        //     this.board.createPresenter();
+        // });
+
+        // Fill panel with algorithms
+        let algorithms = document.getElementById('algorithms');
+        for (let Algorithm of this.algorithmsList) {
+            let panel = <HTMLElement>document.getElementById('single-algorithm').cloneNode(true);
+            panel.id = null;
+            panel.getElementsByTagName('h3')[0].textContent = Algorithm.getName();
+            panel.getElementsByTagName('p')[0].textContent = Algorithm.getDescription();
+            panel.getElementsByTagName('span')[0].textContent = Algorithm.getName();
+            algorithms.appendChild(panel);
+            panel.getElementsByTagName('button')[0].addEventListener('click', () => {
+                this.runAlgorithm(Algorithm);
+            });
+        }
+
+        // Open welcome panel
+        this.welcomeScreen();
+    }
+
+    /**
+     * Tries to run an algorithm
+     * @param Algorithm
+     * @param selected
+     */
+    private runAlgorithm(Algorithm, selected : VertexActor = null) {
+        // If there is no selected VertexActor and it should be
+        if (Algorithm.hasOwnProperty('requireSelectVertex') && Algorithm.requireSelectVertex() && !selected) {
+            this.vertexSelect(Algorithm.requireSelectVertex(), Algorithm);
+            return;
+        }
+
+        this.presenter = new Presenter(this.board, Algorithm);
+        this.presenter.selected = selected;
+        let result = this.presenter.prepare();
+
+        if (result !== true) {
+            this.presenter = null;
+            this.showError(<string>result);
+        } else {
+            console.log(this.presenter.getNumberOfSlides());
+            this.presenter.drawSlide(2);
+        }
+    }
+
+    private togglePanels(panels: Object) {
+        for (let id in panels) {
+            document.getElementById(id).style.display = panels[id] ? "block" : "none";
+        }
     }
 
     public openVertexPanel(): void {
-        this.vertexSelectedPanel.style.display = 'block';
-        this.edgeSelectedPanel.style.display = 'none';
+        this.togglePanels({
+            "vertex-select-panel": false,
+            "buttons": false,
+            "hint": false,
+            "edge": false,
+            "vertex": true,
+            "welcome": false,
+            "algorithms": false,
+        });
     }
 
     public openEdgePanel(v: number): void {
-        this.vertexPanelValue.value = v.toString();
-
-        this.vertexSelectedPanel.style.display = 'none';
-        this.edgeSelectedPanel.style.display = 'block';
+        (<HTMLInputElement>document.getElementById('edge-value')).value = v.toString();
+        this.togglePanels({
+            "vertex-select-panel": false,
+            "buttons": false,
+            "hint": false,
+            "edge": true,
+            "vertex": false,
+            "welcome": false,
+            "algorithms": false,
+        });
     }
 
-    public closeAllPanels(): void {
-        this.vertexSelectedPanel.style.display = 'none';
-        this.edgeSelectedPanel.style.display = 'none';
+    public vertexSelect(text: string, Algorithm): void {
+        document.getElementById('vertex-select-panel').getElementsByTagName('p')[0].innerHTML = text;
+        this.board.interactive = false;
+        this.board.onAction.selectVertex = (actor: VertexActor) => {
+            this.runAlgorithm(Algorithm, actor);
+            this.board.onAction.selectVertex = null;
+            this.board.interactive = true;
+        };
+        document.getElementById('vertex-select-dismiss').onclick = () => {
+            this.board.interactive = true;
+            this.welcomeScreen();
+            this.board.onAction.selectVertex = null;
+        };
+        this.togglePanels({
+            "vertex-select-panel": true,
+            "buttons": false,
+            "hint": false,
+            "edge": false,
+            "vertex": false,
+            "welcome": false,
+            "algorithms": false,
+        });
+    }
+
+    public welcomeScreen(): void {
+        this.togglePanels({
+            "vertex-select-panel": false,
+            "buttons": false,
+            "hint": false,
+            "edge": false,
+            "vertex": false,
+            "welcome": true,
+            "algorithms": true,
+        });
+    }
+
+    public presentationScreen(): void {
+        this.togglePanels({
+            "vertex-select-panel": false,
+            "buttons": true,
+            "hint": true,
+            "edge": true,
+            "vertex": false,
+            "welcome": false,
+            "algorithms": false,
+        });
+    }
+
+    /**
+     * Shows error on screen
+     * @param message
+     */
+    private showError(message: string): void {
+        document.getElementById('error-message').innerHTML = message;
+        document.getElementById('error').style.display = 'table';
     }
 
     public loadGraphFromData(data: GraphStructureInterface): void {

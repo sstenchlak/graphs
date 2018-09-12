@@ -1,7 +1,23 @@
+/**
+ * Basic CSS shits
+ */
 * {
     box-sizing: border-box;
 }
 
+*:focus{
+    outline: none;
+}
+
+#single-algorithm {
+    display: none;
+}
+
+
+
+/**
+ * Page
+ */
 body {
     font-family: 'Open Sans', sans-serif;
     color: white;
@@ -12,10 +28,6 @@ body {
     font-weight: 300;
 }
 
-body, #menu {
-    background: #131313;
-}
-
 #background {
     position: absolute;
     top: 0;
@@ -23,6 +35,12 @@ body, #menu {
     left: 0;
     right: 0;
 }
+
+
+
+/**
+ * Board
+ */
 #board {
     position: absolute;
     top: 5%;
@@ -36,31 +54,20 @@ body, #menu {
     height: 100%;
 }
 
-#buttons {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    padding: 5px;
-    text-align: right;
-}
-
-#panel {
-    position: absolute;
-    height: 100%;
-    width: 25%;
-    right: 0;
-    top: 0;
-}
-
-#board text {
+#board svg text {
     alignment-baseline: central;
     text-anchor: middle;
 }
 
-.presentation-slider {
+
+
+/**
+ * Presentation slider
+ */
+#progressbar {
     -webkit-appearance: none;
-    width: 100%;
+    width: 75%;
+    left: 0;
     height: 10px;
     background: none;
     outline: none;
@@ -71,7 +78,7 @@ body, #menu {
     transition: .5s;
 }
 
-.presentation-slider::-webkit-slider-thumb {
+#progressbar::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 5%;
@@ -82,7 +89,7 @@ body, #menu {
     transition: .5s;
 }
 
-.presentation-slider::-moz-range-thumb {
+#progressbar::-moz-range-thumb {
     width: 5%;
     height: 10px;
     background: white;
@@ -91,18 +98,21 @@ body, #menu {
     transition: .5s;
 }
 
-.presentation-slider:hover, .presentation-slider:active {
+#progressbar:hover, #progressbar:active {
     height: 25px;
 }
 
-.presentation-slider:hover::-webkit-slider-thumb, .presentation-slider:active::-webkit-slider-thumb {
+#progressbar:hover::-webkit-slider-thumb, #progressbar:active::-webkit-slider-thumb {
     height: 25px;
 }
 
-.presentation-slider:hover::-moz-range-thumb, .presentation-slider:active::-moz-range-thumb {
+#progressbar:hover::-moz-range-thumb, #progressbar:active::-moz-range-thumb {
     height: 25px;
 }
 
+/**
+ * Speed slider
+ */
 .speed-slider {
     -webkit-appearance: none;
     width: 6%;
@@ -133,61 +143,79 @@ body, #menu {
 }
 
 
-*:focus{
-    outline: none;
-}
-
-#menu {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 5%;
-    overflow: auto;
-}
-
-#menu button {
-    padding: 10px 20px;
-    border:  1px solid white;
-}
-
-#menu .mainmenu button {
-    float: right;
-    margin-top: 0.5cm;
-}
-
-#menu .numbermenu textarea {
-    background: none;
-    border: none;
-    width: 100%;
-    height: auto;
-    color: white;
-    font-size: 1cm;
-}
 
 /**
- * Property panel
+ * Panel
  */
-
-.property-panel {
-    display: none;
-    opacity: 1;
-    transition: opacity 1s ease;
+#panel {
+    position: absolute;
+    height: 100%;
+    width: 25%;
+    right: 0;
+    top: 0;
+    overflow-y: scroll;
+    padding-left: 1em;
 }
 
-.property-panel .panel {
+
+/**
+ * .panel(s) in #panel
+ */
+.panel, .subpanel {
     margin: 1em 1em 0 0;
 }
 
-.property-panel .panel .title {
+.panel {
+    display: none;
+}
+
+.panel .title {
     margin-bottom: .5em;
 }
 
-button, input {
+button, .panel input {
     background: none;
     border-radius: 5px;
     padding: 5px 10px;
     border: 1px solid white;
     color: white;
+}
+
+/**
+ * Buttons panel
+ */
+#buttons input {
+    display: block;
+    width: 50%;
+    margin-bottom: 1em;
+}
+
+/**
+ * hint
+ */
+#hint {
+    font-size: 1.2em;
+}
+
+/**
+ * Error panel
+ */
+#error {
+    background: #0080be;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    font-size: 2em;
+}
+
+#error>div {
+    width: 50%;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#error button {
+    font-size: 2rem;
+    margin: 1em;
 }

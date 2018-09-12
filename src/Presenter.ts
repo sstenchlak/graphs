@@ -2,6 +2,7 @@ import {Board, SpecialActorsObjectInterface} from "./Board";
 import {AbstractActor} from "./actors/AbstractActor";
 import {AbstractAlgorithm} from "./algorithm/AbstractAlgorithm";
 import {Application} from "./Application";
+import {VertexActor} from "./actors/VertexActor";
 
 interface SlideInterface {
     duration: number,
@@ -18,9 +19,13 @@ interface AlgorithmClassInterface<T extends AbstractAlgorithm> {
     new (): T;
 }
 
+interface ActorClassInterface<T extends AbstractActor> {
+    new (): T;
+}
+
 
 export class Presenter {
-    private board: Board;
+    public board: Board;
 
     /**
      * All the actors that will be presented
@@ -52,21 +57,26 @@ export class Presenter {
     private defaultStates: object[] = [];
 
     /**
+     * Some algorithms require to select VertexActor before their work
+     */
+    public selected: VertexActor = null;
+
+    /**
      * Create a new presentation, needs list of Actors
      * @param board
      * @param actors
      * @param Algorithm
      */
-    public constructor(board: Board, actors: AbstractActor[], specialActors: SpecialActorsObjectInterface, Algorithm: AlgorithmClassInterface<AbstractAlgorithm>) {
+    public constructor(board: Board, Algorithm: AlgorithmClassInterface<AbstractAlgorithm>) {
         this.board = board;
-        this.actors = actors;
-        this.specialActors = specialActors;
+        this.actors = board.actors;
+        this.specialActors = board.specialActors;
 
         //Set default state to all added actors
         for (let key in this.actors) {
             let n = this.actors[key].actorID = Number(key);
 
-            //this.states[n] = this.actors[key].getState();
+            this.states[n] = {};
         }
 
         // Creates new Algorithm
@@ -80,6 +90,7 @@ export class Presenter {
      * @param text
      */
     public makeSnapShot(duration: number, text: string): void {
+        console.log("Snapshot made: " + text);
         this.setSlideState(this.specialActors.hint, {text: text});
         this.slides.push({
             duration: duration,
@@ -115,6 +126,23 @@ export class Presenter {
     }
 
     /**
+     * Destroys algorithm and return everything as it was before it
+     */
+    public destroy(): void {
+        // Set default values
+        for (let i in this.defaultStates) {
+            this.actors[i].setState(this.defaultStates[i]);
+        }
+    }
+
+    /**
+     * Return number of slides
+     */
+    public getNumberOfSlides(): number {
+        return this.slides.length;
+    }
+
+    /**
      * Draws specific slide
      * @param n
      */
@@ -132,5 +160,36 @@ export class Presenter {
     public setSlideState(actor: AbstractActor, state: Object) {
         // Set new state
         this.states[actor.actorID] = {...this.states[actor.actorID], ...state};
+    }
+
+
+    /**
+     * HELPER FUNCTIONS
+      */
+
+
+    /**
+     * Goes through all the Actors and select only specified by ActorClass
+     * @param ActorClass
+     * @param callback
+     */
+    public forAllActors<T extends AbstractActor>(ActorClass: ActorClassInterface<T>, callback: <T extends AbstractActor>(actor: T) => void) {
+        for (let actor of this.actors) {
+            if (actor instanceof ActorClass) {
+                callback(actor);
+            }
+        }
+    }
+
+
+    /**
+     * Sets state to all the actors instance of ActorClass
+     * @param ActorClass
+     * @param state
+     */
+    public setSlideStateForAllActors<T extends AbstractActor>(ActorClass: ActorClassInterface<T>, state: Object) {
+        this.forAllActors(ActorClass, (actor) => {
+            this.setSlideState(actor, state);
+        });
     }
 }

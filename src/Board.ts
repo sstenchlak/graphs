@@ -28,17 +28,29 @@ export class Board {
 
     public selected: VertexActor|EdgeActor|null = null;
 
-    private interactive: boolean = true;
+    /**
+     * Defines what can user do on the board.
+     */
+    public interactive = true;
+
+    /**
+     * Redefines some actions
+     */
+    public onAction: {
+        selectVertex: null|((actor: VertexActor) => void);
+    } = {
+        selectVertex:  null,
+    };
 
     /**
      * All the actors on the board
      */
-    private actors: AbstractActor[] = [];
+    public actors: AbstractActor[] = [];
 
     /**
      * Special actors on the board
      */
-    private specialActors: SpecialActorsObjectInterface = {
+    public specialActors: SpecialActorsObjectInterface = {
         background: null,
         hint: null
     };
@@ -133,9 +145,13 @@ export class Board {
      * @param actor
      */
     public clickedOnActor(actor: AbstractActor): void {
-        if (!this.interactive) return null;
-
         if (actor instanceof VertexActor) {
+            if (this.onAction.selectVertex) {
+                this.onAction.selectVertex(actor);
+                return null
+            }
+            if (!this.interactive) return;
+
             if (this.selected !== actor && this.selected instanceof VertexActor) {
                 // Create new Ege
                 let res = this.safeCreateEdge([this.selected, actor]);
@@ -150,6 +166,7 @@ export class Board {
                 this.setSelectedActor(actor);
             }
         } else if (actor instanceof EdgeActor) {
+            if (!this.interactive) return;
             this.setSelectedActor(actor);
         }
     }
@@ -227,7 +244,7 @@ export class Board {
             this.selected.setState({color: [255, 255, 0]}, false);
             this.application.openEdgePanel(this.selected.getState('text'));
         } else if (!this.selected) {
-            this.application.closeAllPanels();
+            this.application.welcomeScreen();
         }
 
         return ret;
@@ -259,13 +276,5 @@ export class Board {
 
     public setValueToSelectedEdgeActor(v: number): void {
         (<EdgeActor>this.selected).setState({text: v});
-    }
-
-    public createPresenter() {
-        let presenter = new Presenter(this, this.actors, this.specialActors, DijkstrasAlgorithm);
-        let s = presenter.prepare();
-        console.log(s);
-        if (s === true)
-            window['presenter'] = presenter;
     }
 }
