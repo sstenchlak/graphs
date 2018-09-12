@@ -2,6 +2,15 @@ import {AbstractActor} from "./actors/AbstractActor";
 import {VertexActor} from "./actors/VertexActor";
 import {EdgeActor} from "./actors/EdgeActor";
 import {Application} from "./Application";
+import {BackgroundActor} from "./actors/BackgroundActor";
+import {HintActor} from "./actors/HintActor";
+import {Presenter} from "./Presenter";
+import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
+
+export interface SpecialActorsObjectInterface {
+    background: BackgroundActor;
+    hint: HintActor;
+}
 
 /**
  * Theater for Actors
@@ -12,6 +21,7 @@ export class Board {
     public backgroundElement: HTMLElement;
     private SVGPoint: SVGPoint;
     private application: Application;
+    public hintElement: HTMLElement;
 
     private readonly HEARTBEAT_PERIOD = 1;
     private readonly HEARTBEAT_MULTIPLIER = 2;
@@ -24,6 +34,14 @@ export class Board {
      * All the actors on the board
      */
     private actors: AbstractActor[] = [];
+
+    /**
+     * Special actors on the board
+     */
+    private specialActors: SpecialActorsObjectInterface = {
+        background: null,
+        hint: null
+    };
 
     /**
      * Vertices on the board
@@ -40,17 +58,20 @@ export class Board {
         this.SVGActorLayer = options.SVGActorLayer;
         this.backgroundElement = options.backgroundElement;
         this.application = options.application;
+        this.hintElement = options.hintElement;
 
         this.SVGPoint = this.SVG.createSVGPoint();
 
         this.SVG.addEventListener('click', (evt: MouseEvent) => {this.clickedOnBoard(evt);});
+
+
     }
 
     /**
      * Every actor must be registered in one board
      * @param actor
      */
-    public registerActor(actor: AbstractActor): AbstractActor {
+    public registerActor<T extends AbstractActor>(actor: T): T {
         this.actors.push(actor);
         actor.connectTo(this);
         return actor;
@@ -64,6 +85,12 @@ export class Board {
         this.registerActor(vertexActor);
         this.vertices.push(vertexActor);
         return vertexActor;
+    }
+
+    public registerSpecialActor<T extends AbstractActor>(name: string, actor: T): T {
+        this.registerActor(actor);
+        this.specialActors[name] = actor;
+        return actor;
     }
 
     /**
@@ -232,5 +259,13 @@ export class Board {
 
     public setValueToSelectedEdgeActor(v: number): void {
         (<EdgeActor>this.selected).setState({text: v});
+    }
+
+    public createPresenter() {
+        let presenter = new Presenter(this, this.actors, this.specialActors, DijkstrasAlgorithm);
+        let s = presenter.prepare();
+        console.log(s);
+        if (s === true)
+            window['presenter'] = presenter;
     }
 }

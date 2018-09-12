@@ -3,6 +3,8 @@ import {BackgroundActor} from "./actors/BackgroundActor";
 import {EdgeActor} from "./actors/EdgeActor";
 import {VertexActor} from "./actors/VertexActor";
 import {AbstractActor} from "./actors/AbstractActor";
+import {HintActor} from "./actors/HintActor";
+import {Presenter} from "./Presenter";
 
 export interface GraphStructureInterface {
     vertices: Object[],
@@ -60,12 +62,17 @@ export class Application {
             SVG: document.querySelector('#board svg'),
             SVGActorLayer: document.getElementById('board').querySelector('.scale-layer'),
             backgroundElement: document.getElementById('background'),
-            application: this
+            application: this,
+            hintElement: document.getElementById("hint")
         });
 
-        // Register background, instance could be forgotten
+        // Register background
         let background = new BackgroundActor();
-        this.board.registerActor(background);
+        this.board.registerSpecialActor('background', background);
+
+        // Register hint element
+        let hint = new HintActor();
+        this.board.registerSpecialActor('hint', hint);
 
         // Register buttons in EdgePanel
         this.edgeSelectedPanel.getElementsByClassName('remove')[0].addEventListener('click', ()=>{
@@ -111,6 +118,11 @@ export class Application {
 
         // Create some graph
         this.loadGraphFromData(this.graphExaple);
+
+        // Bind do a shit
+        document.getElementById('do-a-shit').addEventListener('click', ()=>{
+            this.board.createPresenter();
+        });
     }
 
     public openVertexPanel(): void {
@@ -144,6 +156,26 @@ export class Application {
             e.setState(data.edges[key][2], true);
             e.setState({opacity: 1});
         }
+    }
+
+    /**
+     * Helper function for cloning object
+     * @param obj
+     */
+    public static cloneObject<T>(obj: T): T {
+        if (typeof obj !== 'object' || obj === null)
+            return obj;
+
+        let clone;
+        if (Array.isArray(obj)) {
+            clone = [];
+        } else {
+            clone = {};
+        }
+        for(let i in obj) {
+            clone[i] = Application.cloneObject(obj[i]);
+        }
+        return clone;
     }
 }
 

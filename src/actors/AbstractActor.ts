@@ -1,4 +1,5 @@
 import {Board} from "../Board";
+import {Application} from "../Application";
 
 export interface stateUpdaterFunction {
     (oldState, state, newState, progress: number);
@@ -22,7 +23,12 @@ export abstract class AbstractActor {
 
     protected board: Board;
 
-    protected constructor() {
+    /**
+     * Helper for Presenter
+     */
+    public actorID: number;
+
+    public constructor() {
         // Could be overwritten by children
         this.stateUpdaters.push(AbstractActor.simpleMapState);
 
@@ -64,8 +70,8 @@ export abstract class AbstractActor {
      * @param callback
      */
     public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
-        let oldState = AbstractActor.cloneObject(this.state);
-        let newState = AbstractActor.cloneObject(state);
+        let oldState = Application.cloneObject(this.state);
+        let newState = Application.cloneObject(state);
         if (!doNotStopAnimation || !immediately) {
             this.animationInProgress = false;
             newState = {...this.animationNewState, ...newState};
@@ -114,22 +120,6 @@ export abstract class AbstractActor {
     protected abstract update();
 
     /**
-     * Helper function for cloning object
-     * Todo: Maybe remove or move to different class
-     * @param obj
-     */
-    static cloneObject(obj) {
-        let clone = {};
-        for(let i in obj) {
-            if(typeof(obj[i])=="object" && obj[i] != null)
-                clone[i] = this.cloneObject(obj[i]);
-            else
-                clone[i] = obj[i];
-        }
-        return clone;
-    }
-
-    /**
      * Knocking from outside to update animations
      * @param time from last knock
      */
@@ -174,18 +164,18 @@ export abstract class AbstractActor {
      * Return state (not actual caused by animation, but final)
      * @param value or null
      */
-    public getState(value: string|null): any {
+    public getState(value: string|null = null): any {
         if (this.animationInProgress) {
             if (value) {
-                return {...this.state, ...this.animationNewState}[value];
+                return Application.cloneObject({...this.state, ...this.animationNewState}[value]);
             } else {
-                return {...this.state, ...this.animationNewState};
+                return Application.cloneObject({...this.state, ...this.animationNewState});
             }
         } else {
             if (value) {
-                return this.state[value];
+                return Application.cloneObject(this.state[value]);
             } else {
-                return this.state;
+                return Application.cloneObject(this.state);
             }
         }
     }
