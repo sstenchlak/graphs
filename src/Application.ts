@@ -2,10 +2,8 @@ import {Board} from "./Board";
 import {BackgroundActor} from "./actors/BackgroundActor";
 import {EdgeActor} from "./actors/EdgeActor";
 import {VertexActor} from "./actors/VertexActor";
-import {AbstractActor} from "./actors/AbstractActor";
 import {HintActor} from "./actors/HintActor";
 import {Presenter} from "./Presenter";
-import {AbstractAlgorithm} from "./algorithm/AbstractAlgorithm";
 import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
 
 export interface GraphStructureInterface {
@@ -21,6 +19,11 @@ export class Application {
     private board: Board;
 
     private presenter: Presenter;
+
+    private presentationTimeout: number = null;
+    private actualSlide: number = null;
+    private relativeSpeed: number = 2;
+    private isRunning: boolean = false;
 
     private graphExaple: GraphStructureInterface = {
         vertices: [
@@ -150,6 +153,12 @@ export class Application {
 
         // Open welcome panel
         this.welcomeScreen();
+
+        // Register buttons
+        document.getElementById('presentation-begin').addEventListener('click', () => {this.setSlide(0)});
+        document.getElementById('presentation-back').addEventListener('click', () => {this.setSlide(this.actualSlide-1)});
+        document.getElementById('presentation-forward').addEventListener('click', () => {this.setSlide(this.actualSlide+1)});
+        document.getElementById('presentation-end').addEventListener('click', () => {this.setSlide(this.presenter.getNumberOfSlides()-1)});
     }
 
     /**
@@ -164,17 +173,25 @@ export class Application {
             return;
         }
 
+        // Prepare everything
         this.presenter = new Presenter(this.board, Algorithm);
         this.presenter.selected = selected;
         let result = this.presenter.prepare();
 
+        // Show errors
         if (result !== true) {
             this.presenter = null;
             this.showError(<string>result);
-        } else {
-            console.log(this.presenter.getNumberOfSlides());
-            this.presenter.drawSlide(2);
+            return;
         }
+
+        // Prepare board
+        document.getElementById('progressbar').setAttribute('max', this.presenter.getNumberOfSlides().toString());
+        document.getElementById('progressbar').style.display = 'block';
+        this.presentationScreen();
+        this.board.interactive = false;
+        this.isRunning = true;
+        this.setSlide(0);
     }
 
     private togglePanels(panels: Object) {
@@ -249,7 +266,7 @@ export class Application {
             "vertex-select-panel": false,
             "buttons": true,
             "hint": true,
-            "edge": true,
+            "edge": false,
             "vertex": false,
             "welcome": false,
             "algorithms": false,
@@ -299,6 +316,31 @@ export class Application {
             clone[i] = Application.cloneObject(obj[i]);
         }
         return clone;
+    }
+
+    /**
+     * Update timming to next slide if some change
+     */
+    public playPauseUpdated() {
+        clearTimeout(this.presentationTimeout);
+        if (!this.presenter || !this.isRunning) return;
+        this.presentationTimeout = setTimeout(() => {
+            this.setSlide(this.actualSlide + 1);
+        }, this.presenter.getSlideTime(this.actualSlide) / this.relativeSpeed);
+    }
+
+    /**
+     * Sets slide
+     * @param n
+     */
+    public setSlide(n: number): void {
+        if (n < 0) n = 0;
+        if (n >= this.presenter.getNumberOfSlides()) n = this.presenter.getNumberOfSlides()-1;
+        this.actualSlide = n;
+        (<HTMLInputElement>document.getElementById('progressbar')).value = n.toString();
+        this.presenter.drawSlide(n);
+        this.actualSlide = n;
+        this.playPauseUpdated();
     }
 }
 

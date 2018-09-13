@@ -143,6 +143,13 @@ export class Presenter {
     }
 
     /**
+     * Return the time to get to next slide
+     */
+    public getSlideTime(n: number): number {
+        return this.slides[n].duration;
+    }
+
+    /**
      * Draws specific slide
      * @param n
      */
