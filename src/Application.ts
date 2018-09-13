@@ -5,6 +5,7 @@ import {VertexActor} from "./actors/VertexActor";
 import {HintActor} from "./actors/HintActor";
 import {Presenter} from "./Presenter";
 import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
+import {BoruvkasAlgorithm} from "./algorithm/BoruvkasAlgorithm";
 
 export interface GraphStructureInterface {
     vertices: Object[],
@@ -60,7 +61,8 @@ export class Application {
      * (should extends AbstractAlgorithm)
      */
     private algorithmsList = [
-        DijkstrasAlgorithm
+        DijkstrasAlgorithm,
+        BoruvkasAlgorithm
     ];
 
     public constructor() {
@@ -87,7 +89,7 @@ export class Application {
             this.board.removeEdgeActor(<EdgeActor>this.board.selected);
         });
         document.getElementById('edge-value').addEventListener('input', ()=>{
-            this.board.selected.setState({text: Number(document.getElementById('edge-value'))});
+            this.board.selected.setState({text: Number((<HTMLInputElement>document.getElementById('edge-value')).value)});
         });
         document.getElementById('edge-remove-value').addEventListener('click', ()=>{
             this.board.selected.setState({text: null});
@@ -96,8 +98,8 @@ export class Application {
 
         let orientations = {
             'edge-orientation-none': [0, 0],
-            'edge-orientation-positive': [1, 0],
-            'edge-orientation-negative': [0, 1]
+            'edge-orientation-positive': [0, 1],
+            'edge-orientation-negative': [1, 0]
         };
 
         for (let key in orientations) {
