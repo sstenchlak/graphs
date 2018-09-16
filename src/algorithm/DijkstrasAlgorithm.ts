@@ -120,7 +120,6 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
             // For every edge connected to it
             for (let edge of element.connectedEdgeActors) {
                 let v = this.getEdgeValueByOrientation(element, edge);
-                console.log("Edge Value: ", v);
                 if (v) {
                     let a = this.getAnotherVertex(element, edge);
                     let vv = this.var(a);

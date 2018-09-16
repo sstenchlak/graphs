@@ -90,7 +90,6 @@ export class Presenter {
      * @param text
      */
     public makeSnapShot(duration: number, text: string): void {
-        console.log("Snapshot made: " + text);
         this.setSlideState(this.specialActors.hint, {text: text});
         this.slides.push({
             duration: duration,

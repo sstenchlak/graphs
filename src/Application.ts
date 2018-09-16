@@ -23,36 +23,48 @@ export class Application {
 
     private presentationTimeout: number = null;
     private actualSlide: number = null;
-    private relativeSpeed: number = 2;
+    private relativeSpeed: number = 1;
     private isRunning: boolean = false;
 
     private graphExaple: GraphStructureInterface = {
         vertices: [
-            {x: 100, y: 200},
-            {x: 300, y: 100},
-            {x: 300, y: 300},
-            {x: 500, y: 200},
-            {x: 500, y: 400},
+            {x: 120, y: 200},
+            {x: 310, y: 100},
+            {x: 320, y: 300},
+            {x: 510, y: 210},
+            {x: 520, y: 400},
 
-            {x: 300, y: 600},
-            {x: 700, y: 600},
+            {x: 290, y: 620},
+            {x: 720, y: 610},
 
-            {x: 700, y: 300},
+            {x: 710, y: 310},
+
+            {x: 150, y: 520},
+            {x: 715, y: 105},
+
         ],
         edges: [
-            [0, 1, {text: 20}],
-            [0, 2, {text: 10}],
-            [1, 3, {text: 30}],
+            [0, 1, {text: 23}],
+            [0, 2, {text: 12}],
+            [1, 3, {text: 28}],
             [2, 3, {text: 25}],
-            [3, 4, {text: 30}],
+            [3, 4, {text: 31}],
 
             [4, 5, {text: 5}],
-            [4, 6, {text: 10}],
-            [5, 6, {text: 20}],
+            [4, 6, {text: 31}],
+            [5, 6, {text: 24}],
 
-            [3, 7, {text: 10}],
-            [4, 7, {text: 10}],
-            [6, 7, {text: 10}],
+            [3, 7, {text: 13}],
+            [4, 7, {text: 19}],
+            [6, 7, {text: 9}],
+
+            [0, 8, {text: 16}],
+            [2, 8, {text: 7}],
+            [5, 8, {text: 17}],
+
+            [1, 9, {text: 12}],
+            [3, 9, {text: 18}],
+            [7, 9, {text: 21}],
         ]
     };
 
@@ -214,8 +226,8 @@ export class Application {
         });
     }
 
-    public openEdgePanel(v: number): void {
-        (<HTMLInputElement>document.getElementById('edge-value')).value = v.toString();
+    public openEdgePanel(v: number|null): void {
+        (<HTMLInputElement>document.getElementById('edge-value')).value = (v !== null ? v.toString() : '');
         this.togglePanels({
             "vertex-select-panel": false,
             "buttons": false,
@@ -290,6 +302,8 @@ export class Application {
             vertices[key] = new VertexActor();
             this.board.registerVertex(vertices[key]);
             vertices[key].setState(data.vertices[key], true);
+            vertices[key].setState({text: key}, true);
+
             vertices[key].setState({opacity: 1});
         }
 

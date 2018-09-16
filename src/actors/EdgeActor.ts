@@ -22,7 +22,7 @@ export class EdgeActor extends AbstractActor {
     public vertices: [VertexActor, VertexActor];
 
     protected state: EdgeActorStateInterface = {
-        text: '',
+        text: null,
         color: [255, 255, 255],
         size: 1,
         opacity: 0, // Default opacity is 0
@@ -175,12 +175,9 @@ export class EdgeActor extends AbstractActor {
      * @param immediately If should be removed immediately or with animation
      */
     public remove(immediately: boolean): void {
-        console.log("ReMoViNg");
-
         this.setState({opacity: 0}, immediately, false, () => {
             // Remove TextActor
             this.textActor.remove(true); // Because it was animated by this
-console.log("ReMoVeD");
             // Disconnect from VertexActor
             this.vertices[0].unlinkEdge(this);
             this.vertices[1].unlinkEdge(this);

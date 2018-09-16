@@ -20,7 +20,7 @@ export class TextActor extends AbstractActor {
     public element:SVGTextElement;
 
     protected state:TextActorStateInterface = {
-        text: '',
+        text: null,
         x: 0,
         y: 0,
         color: [0, 0, 0],
@@ -48,8 +48,8 @@ export class TextActor extends AbstractActor {
 
         let bbox = this.element.getBBox();
         this.updatePublicInformation({
-            width: bbox.width,
-            height: bbox.height,
+            width: bbox.width ? bbox.width : 0,
+            height: bbox.height ? bbox.height : 0,
             set: this.state.text !== null
         });
     }

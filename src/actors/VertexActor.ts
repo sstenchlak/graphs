@@ -122,9 +122,7 @@ export class VertexActor extends AbstractActor {
      * @param immediately If should be removed immediately or with animation
      */
     public remove(immediately: boolean): void {
-        console.log("Remove vertex actor called");
         this.setState({opacity: 0}, immediately, false, () => {
-            console.log("Remove vertex actor callback called");
             // Remove TextActor
             this.textActor.remove(true); // Because it was animated by this
 
