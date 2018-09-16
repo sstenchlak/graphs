@@ -54,6 +54,9 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
         return true;
     }
 
+    /**
+     * Simple system for storing variables in Actors
+     */
     private vertexVariables: VertexVariable[] = [];
 
     private var(actor: VertexActor, setValue?: VertexVariable) {
@@ -67,50 +70,47 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
     public run(): void {
         this.presenter.setSlideState(this.presenter.specialActors.background, {colors: BackgroundActor.COLORS_RED()});
 
-        this.presenter.makeSnapShot(2000, "Dijkstrův algoritmus slouží pro hledání nejkratších cest z vybraného vrcholu do ostatních. U každého vrcholu udržuje nejkratší dosaženou vzdálenost, která je z počátku nastavená na nekonečno, to znamená, že do daného vrcholu nevede cesta, neboť ještě nebyla nalezena.");
+        this.presenter.makeSnapShot(8000, "Dijkstrův algoritmus slouží pro hledání nejkratších cest z vybraného vrcholu do ostatních. U každého vrcholu udržuje nejkratší dosaženou vzdálenost, která je z počátku nastavená na nekonečno, to znamená, že do daného vrcholu nevede cesta, neboť ještě nebyla nalezena.");
 
         this.presenter.setSlideStateForAllActors(VertexActor, {opacity: 0.2, text: '∞'});
         this.presenter.setSlideStateForAllActors(EdgeActor, {opacity: 0.2});
-        this.presenter.forAllActors(VertexActor, (actor) => {
-            // @ts-ignore
-            this.var(<VertexActor>actor, {
+        this.presenter.forAllActors(VertexActor, <VertexActor>(actor) => {
+            this.var(actor, {
                 p: null,
                 h: null,
             });
         });
 
-        this.presenter.setSlideState(this.presenter.selected, {opacity: 1, color: [255, 255, 255], size: 1, text: 0});
+        this.presenter.setSlideState(this.presenter.selected, {opacity: 1, text: 0});
         this.var(<VertexActor>this.presenter.selected).h = 0;
 
-        this.presenter.makeSnapShot(2000, "Vrcholy mají také 3 stavy. Nenalezené - ty zobrazujeme nevýrazně, otevřené - ty jsou bílé a uzavřené, ty budou černě orámovány. Ze začátku je tedy pouze počáteční vrchol otevřený.");
+        this.presenter.makeSnapShot(5000, "Vrcholy mají také 3 stavy. Nenalezené - ty zobrazujeme nevýrazně, otevřené - ty jsou bílé a uzavřené, ty budou černě orámovány. Ze začátku je tedy pouze počáteční vrchol otevřený.");
 
         let queue: VertexActor[] = [<VertexActor>this.presenter.selected];
 
         // Main cycle
         while (queue.length) {
             // Takes Vertex with lowest value
-            let element = queue.shift();
+            let actualVertex = queue.shift();
 
             // Mark it
-            this.presenter.setSlideState(element, {size: 1.5});
+            this.presenter.setSlideState(actualVertex, {size: 1.5});
 
             // Opacity to all edges
-            for (let x of element.connectedEdgeActors) {
+            for (let x of actualVertex.connectedEdgeActors) {
                 this.presenter.setSlideState(x, {opacity: 1});
             }
 
             // Create slide with text depending on count of remaining open vertices
             if (queue.length === 0) {
-                this.presenter.makeSnapShot(2000, "Je otevřený jeden vrchol. Ten tedy vebereme a budeme hledat z něj.");
+                this.presenter.makeSnapShot(5000, "Je otevřený jeden vrchol. Ten tedy vebereme a budeme hledat z něj.");
             } else {
-                this.presenter.makeSnapShot(2000,
+                this.presenter.makeSnapShot(5000,
                     (queue.length + 1).toString() +
                     (queue.length <= 3 ? " vrcholy jsou otevřené." : " vrcholů je otevřených.") +
-                    " Vebereme tedy ten s nejmenší hodnotou (" + this.var(element).h + ") a hledáme z něj."
+                    " Vebereme tedy ten s nejmenší hodnotou (" + this.var(actualVertex).h + ") a hledáme z něj."
                 );
             }
-
-
 
 
 
@@ -118,42 +118,47 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
             let text = "Sousední vrcholy, které byly uzavřené otevřeme a nastavíme jim hodnotu rovnou hodnotě aktuálního vrcholu + hodnotě hrany. Pokud byl nějaký vrchol již otevřen a měl by dostat hodnotu menší, než má aktuální, tak ji aktualizujeme.";
 
             // For every edge connected to it
-            for (let edge of element.connectedEdgeActors) {
-                let v = this.getEdgeValueByOrientation(element, edge);
-                if (v) {
-                    let a = this.getAnotherVertex(element, edge);
-                    let vv = this.var(a);
+            for (let edge of actualVertex.connectedEdgeActors) {
+                let edgeValue = this.getEdgeValueByOrientation(actualVertex, edge);
+                if (edgeValue) {
+                    let anotherVertex = this.getAnotherVertex(actualVertex, edge);
+                    let anotherVertexProperties = this.var(anotherVertex);
 
-                    let distance = this.var(element).h + v;
-                    if (vv.h===null) {
+                    this.presenter.setSlideState(anotherVertex, {size: 1.3});
+
+                    let distance = this.var(actualVertex).h + edgeValue;
+                    if (anotherVertexProperties.h===null) {
                         // Not discovered
-                        this.presenter.setSlideState(a, {opacity: 1, text: distance});
+                        this.presenter.setSlideState(anotherVertex, {opacity: 1, text: distance});
                         this.presenter.setSlideState(edge, {color: [0, 0, 0]});
 
-                        this.var(a).h = distance;
-                        this.var(a).p = edge;
+                        this.var(anotherVertex).h = distance;
+                        this.var(anotherVertex).p = edge;
 
-                        queue.push(a);
+                        queue.push(anotherVertex);
 
-                        this.presenter.makeSnapShot(2000, "Nalezli jsme nový vrchol.");
-                    } else if (vv.h > distance) {
+                        this.presenter.makeSnapShot(5000, "Nalezli jsme nový vrchol, který byl předtím neotevřený. Nastavíme mu hodnotu " + this.var(actualVertex).h + " + " + edgeValue + " jakožto součet hodnoty výchozího vrcholu a hrany, přes kterou se lze k vrcholu dostat. Vrchol má tedy hodnotu " + distance + " a je považován za otevřený.");
+
+                    } else if (anotherVertexProperties.h > distance) {
                         // Shorter path
-                        this.presenter.setSlideState(this.var(a).p, {color: [255, 255, 255]});
+                        this.presenter.setSlideState(this.var(anotherVertex).p, {color: [255, 255, 255]});
 
-                        this.presenter.setSlideState(a, {text: distance});
+                        this.presenter.setSlideState(anotherVertex, {text: distance});
                         this.presenter.setSlideState(edge, {color: [0, 0, 0]});
 
-                        this.var(a).h = distance;
-                        this.var(a).p = edge;
-                        this.presenter.makeSnapShot(2000, "Aktualizovali jsme starý vrchol.");
+                        this.var(anotherVertex).h = distance;
+                        this.var(anotherVertex).p = edge;
+                        this.presenter.makeSnapShot(8000, "Nyní jsme přišli k vrcholu, který je otevřený a má hodnotu " + anotherVertexProperties.h + ". Ta je ale větší, než hodnota, kterou by dostal, kdyby procházel přes aktuální vrchol. Proto jeho hodnotu aktualizujeme na " + distance + " a upravíme hranu, odkud jsme se k němu dostali.");
                     } else {
-                        // Longer path
+                        this.presenter.makeSnapShot(3000, "Cesta k tomuto vrcholu by byla delší, proto není třeba s tímto vrcholem nic dělat.");
                     }
+
+                    this.presenter.setSlideState(anotherVertex, {size: 1});
                 }
             }
 
-            this.presenter.setSlideState(element, {stroke: [0,0,0], size: 1});
-            this.presenter.makeSnapShot(2000, "Prošli jsme všechny hrany spojené s aktuálním vrcholem. Můžeme ho tedy uzavřít.");
+            this.presenter.setSlideState(actualVertex, {stroke: [0,0,0], size: 1});
+            this.presenter.makeSnapShot(5000, "Prošli jsme všechny hrany spojené s aktuálním vrcholem. Můžeme ho tedy uzavřít.");
 
             queue.sort((a,b)=>{return this.var(a).h - this.var(b).h});
 
@@ -161,7 +166,7 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
         }
 
         this.presenter.setSlideState(this.presenter.specialActors.background, {colors: BackgroundActor.COLORS_GREEN()});
-        this.presenter.makeSnapShot(2000, "Dijkstrův algoritmus v zelenem pozadi :P");
+        this.presenter.makeSnapShot(2000, "Dijkstrův algoritmus tedy dokončil svou práci. U všech dosažitelných vrcholů vrátil délku nejratší cesty a pomocí černých hran lze tuto cestu zrekonstruovat.");
     }
 
     private getEdgeValueByOrientation(vertex: VertexActor, edge: EdgeActor): number|null {
