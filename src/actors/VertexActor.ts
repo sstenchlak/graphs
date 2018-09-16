@@ -53,6 +53,7 @@ export class VertexActor extends AbstractActor {
         super();
         this.waves[0] = new Wave();
         this.waves[1] = new Wave();
+        this.stateChangeHandlers.push((s, i) => {return this.stateForTextActor(s, i)});
     }
 
     public connectTo(board: Board) {
@@ -64,12 +65,17 @@ export class VertexActor extends AbstractActor {
         this.textActor.element.addEventListener('click', (event: MouseEvent) => {event.stopPropagation();  board.clickedOnActor(this);});
     }
 
-    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
+    /**
+     * This function is called before setState is evaluated
+     * @param state
+     * @param immediately
+     */
+    protected stateForTextActor(state, immediately: boolean = false) {
         // update textActor
         if ('text' in state) {
             this.textActor.setState({text: state.text}, immediately, true);
         }
-        super.setState(state, immediately, doNotStopAnimation, callback);
+        return state;
     }
 
     /**

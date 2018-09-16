@@ -31,6 +31,7 @@ export class EdgeActor extends AbstractActor {
 
     public constructor() {
         super();
+        this.stateChangeHandlers.push((s, i) => {return this.stateForTextActor(s, i)});
     }
 
     public connectTo(board: Board): void {
@@ -62,12 +63,17 @@ export class EdgeActor extends AbstractActor {
         });
     }
 
-    public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
+    /**
+     * This function is called before setState is evaluated
+     * @param state
+     * @param immediately
+     */
+    protected stateForTextActor(state, immediately: boolean = false) {
         // update textActor
         if ('text' in state) {
             this.textActor.setState({text: state.text}, immediately, true);
         }
-        super.setState(state, immediately, doNotStopAnimation, callback);
+        return state;
     }
 
     /**

@@ -10,11 +10,6 @@ interface SlideInterface {
     states: Object[],
 }
 
-interface ActorAndStateInterface {
-    actor: AbstractActor;
-    state: Object;
-}
-
 interface AlgorithmClassInterface<T extends AbstractAlgorithm> {
     new (): T;
 }
@@ -23,22 +18,41 @@ interface ActorClassInterface<T extends AbstractActor> {
     new (): T;
 }
 
-
+/**
+ * This class manages presentation, changing slides and creating them.
+ * Its called with Class, which extends AbstractAlgorithm.
+ */
 export class Presenter {
+    /**
+     * Every presenter is connected to Board
+     */
     public board: Board;
 
     /**
      * All the actors that will be presented
+     * Accessible for algorithm object
      */
     public actors: AbstractActor[] = [];
 
     /**
-     * Special actors
+     * Special actors eg background
      */
     public specialActors: SpecialActorsObjectInterface;
 
+    /**
+     * Some algorithms require to select VertexActor before their work
+     * Readable for algorithm object
+     */
+    public selected: VertexActor = null;
+
+    /**
+     * This variable stores states of all the actors during work of algorithm
+     */
     private states: object[] = [];
 
+    /**
+     * Every presenter is connected to an algorithm
+     */
     private algorithm: AbstractAlgorithm;
 
     /**
@@ -57,14 +71,8 @@ export class Presenter {
     private defaultStates: object[] = [];
 
     /**
-     * Some algorithms require to select VertexActor before their work
-     */
-    public selected: VertexActor = null;
-
-    /**
      * Create a new presentation, needs list of Actors
      * @param board
-     * @param actors
      * @param Algorithm
      */
     public constructor(board: Board, Algorithm: AlgorithmClassInterface<AbstractAlgorithm>) {
@@ -72,7 +80,7 @@ export class Presenter {
         this.actors = board.actors;
         this.specialActors = board.specialActors;
 
-        //Set default state to all added actors
+        // Set default state to all added actors
         for (let key in this.actors) {
             let n = this.actors[key].actorID = Number(key);
 
@@ -85,7 +93,7 @@ export class Presenter {
     }
 
     /**
-     * Creates a new snapshot in exactly this state
+     * Creates a new snapshot of all actors set by methods in this class
      * @param duration
      * @param text
      */
@@ -94,12 +102,13 @@ export class Presenter {
         this.slides.push({
             duration: duration,
             text: text, // Todo resolve
-            states: Application.cloneObject(this.states), // Todo make copy
+            states: Application.cloneObject(this.states),
         });
     }
 
     /**
-     * Prepare everything needed
+     * Prepare everything needed for algorithm
+     * Returns true, if everything is ok, otherwise error string
      */
     public prepare(): boolean|string {
         // Tries to prepare everything to work
@@ -160,6 +169,7 @@ export class Presenter {
 
     /**
      * Set state to actor in presentation
+     * Instead of setting state directly, use this function to set state for actual slide
      * @param actor
      * @param state
      */
@@ -168,11 +178,25 @@ export class Presenter {
         this.states[actor.actorID] = {...this.states[actor.actorID], ...state};
     }
 
+    /**
+     * Returns state of Actor
+     * @param actor
+     */
+    public getSlideState(actor: AbstractActor) {
+        return this.states[actor.actorID];
+    }
 
     /**
      * HELPER FUNCTIONS
       */
 
+    /**
+     * Function that copy full state from earlier snapshots
+     * @param snapshotRelative -1 is the last snapshotted slide
+     */
+    public copyState(snapshotRelative: number) {
+        this.states = Application.cloneObject(this.slides[this.slides.length + snapshotRelative].states);
+    }
 
     /**
      * Goes through all the Actors and select only specified by ActorClass
@@ -186,7 +210,6 @@ export class Presenter {
             }
         }
     }
-
 
     /**
      * Sets state to all the actors instance of ActorClass

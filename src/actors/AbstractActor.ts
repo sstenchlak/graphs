@@ -5,22 +5,53 @@ export interface stateUpdaterFunction {
     (oldState, state, newState, progress: number);
 }
 
+export interface stateChangeHandlerFunctionInterface {
+    (state: object, immediately: boolean): object;
+}
+
 /**
  * Everything animated is an actor
  */
 export abstract class AbstractActor {
     protected publicInformation: Object = {};
+
+    /**
+     * List of functions that are called when public information of
+     * the actor are changed. Could be used for handling some changes
+     * in position or height.
+     */
     protected publicInformationListeners: Function[] = [];
 
+    /**
+     * List of functions that are called consecutively and set the state of the
+     * actor during the animation. First function is simpleMapState, the others
+     * could handle animation of more complex properties of the state object.
+     */
     protected stateUpdaters: stateUpdaterFunction[] = [];
+
+    /**
+     * List of functions that are called before the main body of the setState
+     * is evaluated. Could be used to catch some properties and pass to other actors
+     */
+    protected stateChangeHandlers: stateChangeHandlerFunctionInterface[] = [];
+
+    /**
+     * Each actor has a state, that could be changed to change actors behaviour
+     */
     protected state: Object = {};
 
+    /**
+     * Helper variables for animating state.
+     */
     protected animationNewState: object = {};
     protected animationOldState: object = {};
     protected animationTime: number = 0;
     protected animationInProgress: boolean = false;
     protected animationCallback: Function|null = null;
 
+    /**
+     * Each actor must be connected to board.
+     */
     protected board: Board;
 
     /**
@@ -31,7 +62,6 @@ export abstract class AbstractActor {
     public constructor() {
         // Could be overwritten by children
         this.stateUpdaters.push(AbstractActor.simpleMapState);
-
     }
 
     /**
@@ -70,6 +100,10 @@ export abstract class AbstractActor {
      * @param callback
      */
     public setState(state, immediately: boolean = false, doNotStopAnimation: boolean = false, callback: Function = null) {
+        for (let stageChangeHandler of this.stateChangeHandlers) {
+            state = stageChangeHandler(state, immediately);
+        }
+
         let oldState = Application.cloneObject(this.state);
         let newState = Application.cloneObject(state);
         if (!doNotStopAnimation || !immediately) {

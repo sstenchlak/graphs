@@ -7,25 +7,40 @@ import {Presenter} from "./Presenter";
 import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
 import {BoruvkasAlgorithm} from "./algorithm/BoruvkasAlgorithm";
 
+/**
+ * Interface for graph which can be loaded through loadGraphFromData()
+ */
 export interface GraphStructureInterface {
     vertices: Object[],
     edges: [number, number, Object][]
 }
 
 /**
- * Layer between Board and GUI
+ * Layer between Board, Presenter and GUI
  */
 export class Application {
 
-    private board: Board;
+    /**
+     * Main board (theoretically one application could have more boards)
+     */
+    private readonly board: Board;
 
+    /**
+     * If no slideshow is running, the value is null
+     */
     private presenter: Presenter;
 
+    /**
+     * Some variables for presentation
+     */
     private presentationTimeout: number = null;
     private actualSlide: number = null;
     private relativeSpeed: number = 1;
     private isRunning: boolean = false;
 
+    /**
+     * Default graph when app is loaded
+     */
     private graphExaple: GraphStructureInterface = {
         vertices: [
             {x: 120, y: 200},
@@ -73,12 +88,14 @@ export class Application {
      * (should extends AbstractAlgorithm)
      */
     private algorithmsList = [
+        BoruvkasAlgorithm,
         DijkstrasAlgorithm,
-        BoruvkasAlgorithm
     ];
 
+    /**
+     * Registers buttons, HTML elements, creates board and initializes it
+     */
     public constructor() {
-
         // Creates board
         this.board = new Board({
             SVG: document.getElementById('svg'),
@@ -108,6 +125,7 @@ export class Application {
             (<HTMLInputElement>document.getElementById('edge-value')).value = null;
         });
 
+        // Register orientation buttons
         let orientations = {
             'edge-orientation-none': [0, 0],
             'edge-orientation-positive': [0, 1],
@@ -127,14 +145,37 @@ export class Application {
 
         // Register keys
         document.addEventListener('keydown', (event: KeyboardEvent)=>{
-            switch (event.key.toString()) {
-                case 'Delete':
+            if (this.presenter) {
+                // During presentation
+                switch (event.key.toString()) {
+                    case 'PageUp':
+                    case 'ArrowLeft':
+                        this.setSlide(this.actualSlide - 1);
+                        break;
+                    case 'PageDown':
+                    case 'ArrowRight':
+                        this.setSlide(this.actualSlide + 1);
+                        break;
+                    case 'Home':
+                        this.setSlide(0);
+                        break;
+                    case 'End':
+                        this.setSlide(this.presenter.getNumberOfSlides()-1);
+                        break;
+                    case 'Escape':
+                        this.stopAlgorithm();
+                        break;
+                }
+            } else {
+                switch (event.key.toString()) {
+                    case 'Delete':
                         if (this.board.selected instanceof VertexActor) {
                             this.board.removeVertexActor(this.board.selected);
                         } else if (this.board.selected instanceof EdgeActor) {
                             this.board.removeEdgeActor(this.board.selected);
                         }
-                    break;
+                        break;
+                }
             }
         });
 
@@ -145,11 +186,6 @@ export class Application {
         document.getElementById('error-hide').addEventListener('click', ()=>{
             document.getElementById('error').style.display = 'none';
         });
-
-        // Bind do a shit
-        // document.getElementById('do-a-shit').addEventListener('click', ()=>{
-        //     this.board.createPresenter();
-        // });
 
         // Fill panel with algorithms
         let algorithms = document.getElementById('algorithms');
@@ -173,6 +209,37 @@ export class Application {
         document.getElementById('presentation-back').addEventListener('click', () => {this.setSlide(this.actualSlide-1)});
         document.getElementById('presentation-forward').addEventListener('click', () => {this.setSlide(this.actualSlide+1)});
         document.getElementById('presentation-end').addEventListener('click', () => {this.setSlide(this.presenter.getNumberOfSlides()-1)});
+        document.getElementById('presentation-stop').addEventListener('click', () => {this.stopAlgorithm()});
+
+        // Register play-pause button
+        document.getElementById('presentation-play-pause').addEventListener('click', () => {
+            this.isRunning = !this.isRunning;
+            this.updatePlayPauseButton();
+            this.playPauseUpdated();
+        });
+
+        // Register presentation slider
+        let progressbar = <HTMLInputElement>document.getElementById('progressbar');
+        progressbar.addEventListener('change', () => {this.setSlide(Number(progressbar.value))});
+
+        // Register speed slider
+        let speedSlider = <HTMLInputElement>document.getElementById('presentation-speed');
+        let speedSliderF;
+        speedSlider.addEventListener('input', speedSliderF = () => {
+            let min = 0.25;
+            let max = 6;
+            let x = Number(speedSlider.value) / 1000;
+            let val=1;
+            if (x>0.5) {
+                val = (max - 1)*(x-0.5)/0.5 + 1;
+            } else {
+                val = (1 - min) * (x) / 0.5 + min;
+            }
+
+            this.relativeSpeed = val;
+            this.playPauseUpdated();
+        });
+        speedSliderF();
     }
 
     /**
@@ -206,8 +273,25 @@ export class Application {
         this.board.interactive = false;
         this.isRunning = true;
         this.setSlide(0);
+        this.updatePlayPauseButton();
     }
 
+    /**
+     * Stops algorithm and returns to welcome screen.
+     */
+    private stopAlgorithm() {
+        this.presenter.destroy();
+        this.presenter = null;
+        this.welcomeScreen();
+        this.board.interactive = true;
+        this.isRunning = false;
+        this.playPauseUpdated();
+    }
+
+    /**
+     * This function simply set display style property to HTML elements by key
+     * @param panels
+     */
     private togglePanels(panels: Object) {
         for (let id in panels) {
             document.getElementById(id).style.display = panels[id] ? "block" : "none";
@@ -243,9 +327,9 @@ export class Application {
         document.getElementById('vertex-select-panel').getElementsByTagName('p')[0].innerHTML = text;
         this.board.interactive = false;
         this.board.onAction.selectVertex = (actor: VertexActor) => {
-            this.runAlgorithm(Algorithm, actor);
             this.board.onAction.selectVertex = null;
             this.board.interactive = true;
+            this.runAlgorithm(Algorithm, actor);
         };
         document.getElementById('vertex-select-dismiss').onclick = () => {
             this.board.interactive = true;
@@ -302,8 +386,6 @@ export class Application {
             vertices[key] = new VertexActor();
             this.board.registerVertex(vertices[key]);
             vertices[key].setState(data.vertices[key], true);
-            vertices[key].setState({text: key}, true);
-
             vertices[key].setState({opacity: 1});
         }
 
@@ -343,6 +425,12 @@ export class Application {
         this.presentationTimeout = setTimeout(() => {
             this.setSlide(this.actualSlide + 1);
         }, this.presenter.getSlideTime(this.actualSlide) / this.relativeSpeed);
+    }
+
+    private updatePlayPauseButton() {
+        let e = <HTMLElement>document.getElementById('presentation-play-pause').getElementsByTagName('i')[0];
+        e.classList.toggle('fa-pause', !this.isRunning);
+        e.classList.toggle('fa-play', this.isRunning);
     }
 
     /**
