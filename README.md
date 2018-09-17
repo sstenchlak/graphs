@@ -99,12 +99,12 @@ Metoda `setVertices(vertices: [VertexActor, VertexActor])` připojí hranu na ko
 
 *Pozn.: Komunikace mezi herci může tedy probíhat dvěmi způsoby. Buď si "slave" zaregistruje `publicInformationListener`, nebo "master" bude měnit stav ostatních herců. V tomto případě by se dalo udělat i to, že by vrchol nastavoval stav hranám, ale v obecném případě chceme zachovat obě možnosti, aby nebylo nutné při přidání nového typu herce upravovat ostatní.*
 
-### `HintActor`
+#### `HintActor`
 * `text: string` - Text
 
 Jediná instance v celé aplikaci, která obsluhuje panel napravo zobrazující nápovědu ke konkrétním snímkům.
 
-### `BackgroundActor`
+#### `BackgroundActor`
 * `colors: [number, number, number][]` - Pole alespoň 4 barev, které se budou měnit
 * `gradientSpeed: number` - Relativní rychlost
 
@@ -112,7 +112,7 @@ Jediná instance v celé aplikaci, která mění pozadí.
 
 ---
 
-### Jaké další herce lze přidat?
+#### Jaké další herce lze přidat?
 * Zobrazení proměnné/proměnných, co si algoritmus pamatuje - Herci vytvoření v průběhu algoritmu, kteří by zobrazovali globální proměnné, které některé algoritmy mohou využívat
 * Tabulka
 * Hudba v pozadí - Jediná instance podobně jako u pozadí. Dala by se nastavovat rychlost, nebo styl hudby
@@ -120,3 +120,66 @@ Jediná instance v celé aplikaci, která mění pozadí.
 * Textové bubliny - Obdobně jako u šipek
 
 
+### Presenter
+Třída řešící stránkování prezentace, vytvoření prezentace a obsluhu vytváření algoritmu.
+Je inicializována pouze tehdy, když je spuštěn algoritmus, pak je zničena.
+
+`constructor(board, Algorithm)` - Při vytvoření je třeba dodat třídu algoritmu, který má být prezentován. Uloží si všechny herce a vytvoří jim proměnné, do které lze ukládat stavy u jednotlivých snímků.
+
+`prepare(): boolean|string` - Spustí algoritmus a předtím ověří, zda vše je připraveno. V případě chyby vrátí error string, jinak true.
+
+`destroy()` - Nastaví stavy všech herců do původního "stavu".
+
+`setSlideState(actor: AbstractActor, state: Object)` - Metoda volána algoritmem, která nastaví stav herci u konkrétního snímku. 
+
+`makeSnapShot(duration: number, text: string)` - Vezme všechny stavy uložené metodou `setSlideState` a vytvoří jejich kopii a tak udělá snímek. `duration` určuje délku snímku v milisekundách a `text` je jen pomoc pro nastavení stavu pro `HintActor`, který zobrazuje informativní text.
+
+*Pracuje se pouze s těmi parametry stavu, které byly v průběhu algoritmu upravovány. Pokud se tedy například nenastavoval stav `text`, nebude předán ani do `setState` u jednotlivých herců a nezpůsobí zbytečnou logiku na obsluhu.*
+
+`getNumberOfSlides(): number` - Vrátí počet snímků.
+
+`getSlideTime(n: number): number` - Vrátí čas konkrétního snímku.
+
+`drawSlide(n: number)` - Vyvolá konkrétní snímek, tedy nastaví všem hercům stav, který byl zkopírován v algoritmu během n-tého volání funkce `makeSnapShot`.
+
+
+### `AbstractAlgorithm`
+Předek všech algoritmů, obsahuje metody, jež by každý algoritmus měl mít.
+
+`static getName(): string` - Vrátí název algoritmu.
+
+`static getDescription(): string` - Vrátí popis algoritmu.
+
+`static requireSelectVertex(): false|string` - Vrátí `false`, nebo v případě, že je potřeba vybrat výchozí vrchol, odkud algoritmus začíná, vrátí text, který se zobrazí uživateli.
+
+`check(): boolean|string` - V této metodě by si měl algoritmus ověřit, zda je vše připraveno a zda je vše korektní, pak vrátí `true`, v opačném případě chybovou hlášku.
+
+`run()` - Spustí algoritmus. Ten by během své práce měl minimálně volat `this.presenter.setSlideState` a `this.presenter.makeSnapShot`. Nesmí nastavovat stav přímo přes `actor.setState`, protože by se projevil ihned.
+
+#### Podporované algoritmy
+Jednotlivé třídy implementují algoritmus grafových algoritmů. Obvykle obsahují pomocné metody, například na ukládání proměnných do hran a vrcholů, protože jediná informace o struktuře grafu je obsažena v hercích a stavech herců.
+
+* `BoruvkasAlgorithm` - Borůvkův algoritmus
+* `DijkstrasAlgorithm` - Dijkstrův algoritmus
+
+### `Application`
+Třída zajišťující obsluhu dalších prvků aplikace a odchytávání událostí od uživatele a registrování prvků.
+
+#### Algoritmus
+Algoritmus se spustí zavoláním `runAlgorithm(Algorithm)` kde `Algorithm` je třída rozšiřující `AbstractAlgorithm`. Zavoláním se zinicializují všechny potřebné prvky, zakáže se editování grafu, přepnou se panely, ověří se, zda algoritmus nevrátil chybu, zda nepotřebuje vybrat výchozí vrchol a podobně. Zrušení algoritmu se obslouží zavoláním `stopAlgorithm()`.
+
+#### Obsluha GUI
+Se děje převážně v konstruktoru a dále ve funkcích `openVertexPanel()`, `openEdgePanel()` apod, které se starají o přepínání panelů.
+
+#### Obsluha prezentace
+Protože třída `Presenter` dokáže vyvolat jen konkrétní snímek, je zde potřeba vyřešit automatické přepínání snímků a obsluhu stránkování.
+
+`playPauseUpdated()` je volána při zásazích do přehrávání prezentace a nastavuje časovač na přepnutí na nový snímek.
+
+`setSlide(n: number)` nastaví konkrétní snímek prezentace s tím, že aktualizuje slider, časovač a ostatní potřebné věci.
+
+---
+
+`cloneObject<T>(obj: T): T` - Pomocná metoda pro vytvoření kopie objektu, aby úprava kopie neovlivnila zdroj. Využívá se při vytváření snímku, kde je potřeba vytvořit kopii stavu.
+
+`loadGraphFromData(data: GraphStructureInterface)` - Vytvoří graf z poměrně jednoduché struktury. Využívá se při spuštění aplikace.
