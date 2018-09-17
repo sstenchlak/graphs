@@ -49,7 +49,7 @@ Funkce obsažené v `stateChangeHandlers: stateChangeHandlerFunctionInterface[]`
 
 `knock(time: number)` - Důležitá funkce, která je volána zvenčí (třídou `Board`) a je jí předáván čas od posledního volání této funkce. Slouží pro animaci vnitřního stavu herce, nebo fluktuací pohybu, jak je tomu u vrcholů grafu.
 
-*Kdyby funkce nebyla voolána, herci se nebudou hýbat a nebudou měnit stavy, pokud nebude `immediately = true`.*
+*Kdyby funkce nebyla volána, herci se nebudou hýbat a nebudou měnit stavy, pokud nebude `immediately = true`.*
 
 `connectTo(board: Board)` - Postará se o zaregistrování herce.
 
@@ -70,12 +70,12 @@ Implementuje vlastní `stateChangeHandler` který řeší animaci textu. Pokud o
 Jako `publicInformation` jsou šířka, výška a příznak, zda obsahuje text.
 
 #### `VertexActor`
-* `text: string|number` - Poposek
+* `text: string|number` - Popisek
 * `x: number` - Pozice
 * `y: number` - Pozice
 * `color: [number, number, number]` - Barva
 * `size: number` - Relativní velikost
-* `stroke: [number, number, number]` - Barva ohraniční 
+* `stroke: [number, number, number]` - Barva ohraničení 
 * `opacity: number` - Neprůhlednost
 
 Reprezentuje vrchol jak z pohledu herce, tak z pohledu grafu, obsahuje tedy pole `connectedEdgeActors: EdgeActor[]` které obsahuje všechny hrany napojené na tento vrchol.
@@ -141,6 +141,25 @@ Je inicializována pouze tehdy, když je spuštěn algoritmus, pak je zničena.
 `getSlideTime(n: number): number` - Vrátí čas konkrétního snímku.
 
 `drawSlide(n: number)` - Vyvolá konkrétní snímek, tedy nastaví všem hercům stav, který byl zkopírován v algoritmu během n-tého volání funkce `makeSnapShot`.
+
+
+### `Board`
+Třída řídící všechny herce, obsahuje pole všech herců a pravidelně na nich volá metodu `knock`. Odchytává akce myší na plátně a vytváří nové vrcholy a hrany.
+
+`registerActor<T extends AbstractActor>(actor: T)` - Zaregistruje herce, tedy si ho přidá do pole a pravidelně volá `knock`, nebo ho předá presenteru při algoritmu.
+
+`registerVertex(vertexActor: VertexActor)` - Speciálně zaregistruje vrchol.
+
+`unregisterActor(actor: AbstractActor)` - Přestane herce obnovovat a smaže jej z pole.
+
+*Pozn.: Pro odstranění herce stačí zavolat na herci metodu `remove`, ta zařídí animaci vymizení a až pak se sama odregistruje. Kdyby se toto provedlo v opačném pořadí, animace by neproběhla, protože by již nebyla volána metoda `knock`.*
+
+Dále obsahuje metody jako `removeEdgeActor`, `removeVertexActor`. V případě druhé se smažou i příslušné hrany a zařídí se, aby vrchol stále nebyl zvolený.
+
+### `Wave`
+Jednoduchá třída generující jednorozměrný spojitý šum, který se využívá na pohyb vrcholů v grafu.
+
+`getNextValue(time: number)` - Jediná veřejná metoda, která vrátí hodnotu šumu na základě času od posledního volání, lze ji tedy napojit přímo na funkci `knock` u herců.
 
 
 ### `AbstractAlgorithm`
