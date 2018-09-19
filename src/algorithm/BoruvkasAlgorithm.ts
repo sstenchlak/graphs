@@ -1,4 +1,4 @@
-import {AbstractAlgorithm} from "./AbstractAlgorithm";
+import {AbstractAlgorithm, requireSelectVertexInformationInterface} from "./AbstractAlgorithm";
 import {EdgeActor} from "../actors/EdgeActor";
 import {BackgroundActor} from "../actors/BackgroundActor";
 import {VertexActor} from "../actors/VertexActor";
@@ -26,8 +26,8 @@ export class BoruvkasAlgorithm extends AbstractAlgorithm {
     /**
      * If algorithm requires to select vertex (for example as a root)
      */
-    public static requireSelectVertex(): false|string {
-        return false;
+    public static requireSelectVertex(): requireSelectVertexInformationInterface[] {
+        return [];
     }
 
     private vertexEdgeVariables: VertexEdgeVariable[] = [];

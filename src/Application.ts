@@ -6,6 +6,7 @@ import {HintActor} from "./actors/HintActor";
 import {Presenter} from "./Presenter";
 import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
 import {BoruvkasAlgorithm} from "./algorithm/BoruvkasAlgorithm";
+import {AbstractActor} from "./actors/AbstractActor";
 
 /**
  * Interface for graph which can be loaded through loadGraphFromData()
@@ -247,22 +248,59 @@ export class Application {
      * @param Algorithm
      * @param selected
      */
-    private runAlgorithm(Algorithm, selected : VertexActor = null) {
-        // If there is no selected VertexActor and it should be
-        if (Algorithm.hasOwnProperty('requireSelectVertex') && Algorithm.requireSelectVertex() && !selected) {
-            this.vertexSelect(Algorithm.requireSelectVertex(), Algorithm);
+    private runAlgorithm(Algorithm, selected : {actor: VertexActor, resetState: Object}[] = []) {
+        // Logic for selecting actors
+        if (Algorithm.hasOwnProperty('requireSelectVertex') && Algorithm.requireSelectVertex().length !== selected.length) {
+            let informationAboutSelection = Algorithm.requireSelectVertex()[selected.length];
+
+            document.getElementById('vertex-select-panel').getElementsByTagName('p')[0].innerHTML = informationAboutSelection.text;
+            this.board.interactive = false;
+            this.board.onAction.selectVertex = (actor: VertexActor) => {
+                this.board.onAction.selectVertex = null;
+                this.board.interactive = true;
+                selected.push({actor: actor, resetState: actor.getStateBeforeChange(informationAboutSelection.state)});
+                actor.setState(informationAboutSelection.state);
+                this.runAlgorithm(Algorithm, selected);
+            };
+            document.getElementById('vertex-select-dismiss').onclick = () => {
+                this.board.interactive = true;
+                for (let x of selected) {
+                    x.actor.setState(x.resetState);
+                }
+                this.welcomeScreen();
+                this.board.onAction.selectVertex = null;
+            };
+            this.togglePanels({
+                "vertex-select-panel": true,
+                "buttons": false,
+                "hint": false,
+                "edge": false,
+                "vertex": false,
+                "welcome": false,
+                "algorithms": false,
+            });
+
             return;
         }
 
+        // If all actors has been selected
+
         // Prepare everything
         this.presenter = new Presenter(this.board, Algorithm);
-        this.presenter.selected = selected;
+        let selectedActors: VertexActor[] = [];
+        for (let x of selected) {
+            selectedActors.push(x.actor);
+        }
+        this.presenter.selected = selectedActors;
         let result = this.presenter.prepare();
 
         // Show errors
         if (result !== true) {
             this.presenter = null;
             this.showError(<string>result);
+            for (let x of selected) {
+                x.actor.setState(x.resetState, true);
+            }
             return;
         }
 
@@ -317,30 +355,6 @@ export class Application {
             "buttons": false,
             "hint": false,
             "edge": true,
-            "vertex": false,
-            "welcome": false,
-            "algorithms": false,
-        });
-    }
-
-    public vertexSelect(text: string, Algorithm): void {
-        document.getElementById('vertex-select-panel').getElementsByTagName('p')[0].innerHTML = text;
-        this.board.interactive = false;
-        this.board.onAction.selectVertex = (actor: VertexActor) => {
-            this.board.onAction.selectVertex = null;
-            this.board.interactive = true;
-            this.runAlgorithm(Algorithm, actor);
-        };
-        document.getElementById('vertex-select-dismiss').onclick = () => {
-            this.board.interactive = true;
-            this.welcomeScreen();
-            this.board.onAction.selectVertex = null;
-        };
-        this.togglePanels({
-            "vertex-select-panel": true,
-            "buttons": false,
-            "hint": false,
-            "edge": false,
             "vertex": false,
             "welcome": false,
             "algorithms": false,

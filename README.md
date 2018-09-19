@@ -55,6 +55,8 @@ Funkce obsažené v `stateChangeHandlers: stateChangeHandlerFunctionInterface[]`
 
 `remove(immediately: boolean)` - Postará se o vlastní smazání včetně animace vymizení.
 
+`getStateBeforeChange<T extends Object>(stateToChange: T): T` - Pomocná funkce, která vrátí objekt, s aktuálním stavem, ale pouze ty vlastnosti, které má objekt `stateToChange`. Lze využít, pokud chceme herci nastavit nový stav, ale pak chceme vrátit původní.
+
 #### `TextActor`
 * `text: any` - Text
 * `x: number` - Pozice
@@ -169,7 +171,7 @@ Předek všech algoritmů, obsahuje metody, jež by každý algoritmus měl mít
 
 `static getDescription(): string` - Vrátí popis algoritmu.
 
-`static requireSelectVertex(): false|string` - Vrátí `false`, nebo v případě, že je potřeba vybrat výchozí vrchol, odkud algoritmus začíná, vrátí text, který se zobrazí uživateli.
+`static requireSelectVertex(): requireSelectVertexInformationInterface[]` - Některé algoritmy vyžadují zvolit několik vrcholů, aby mohly správně fungovat. Funkce vrací pole s objekty obsahující `text`, který se zobrazí při vybírání vrcholu a `state`, který po vybrání zvoleného nastaví tomuto vrcholu následující stav. Jakmile uživatel všechny vrcholy popořadě vybere, jsou přístupné pod `this.presenter.selected`.
 
 `check(): boolean|string` - V této metodě by si měl algoritmus ověřit, zda je vše připraveno a zda je vše korektní, pak vrátí `true`, v opačném případě chybovou hlášku.
 

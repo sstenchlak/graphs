@@ -5,6 +5,11 @@ import {Presenter} from "../Presenter";
 import {VertexActor} from "../actors/VertexActor";
 import {EdgeActor} from "../actors/EdgeActor";
 
+export interface requireSelectVertexInformationInterface {
+    text: string;
+    state: Object;
+}
+
 export abstract class AbstractAlgorithm {
     // abstract static getName(): string;
     // abstract static getDescription(): string;

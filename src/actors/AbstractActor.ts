@@ -213,4 +213,18 @@ export abstract class AbstractActor {
             }
         }
     }
+
+    /**
+     * If you want to set a new state, but then return to previous one,
+     * simply call this function, which returns properties of actual
+     * state of Actor which are in stateToChange object,
+     * @param stateToChange
+     */
+    public getStateBeforeChange<T extends Object>(stateToChange: T): T {
+        let state = Application.cloneObject(stateToChange);
+        for (let x in state) {
+            state[x] = this.getState(x);
+        }
+        return state;
+    }
 }

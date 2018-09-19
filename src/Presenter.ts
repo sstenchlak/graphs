@@ -43,7 +43,7 @@ export class Presenter {
      * Some algorithms require to select VertexActor before their work
      * Readable for algorithm object
      */
-    public selected: VertexActor = null;
+    public selected: VertexActor[] = [];
 
     /**
      * This variable stores states of all the actors during work of algorithm

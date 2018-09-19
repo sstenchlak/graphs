@@ -1,4 +1,4 @@
-import {AbstractAlgorithm} from "./AbstractAlgorithm";
+import {AbstractAlgorithm, requireSelectVertexInformationInterface} from "./AbstractAlgorithm";
 import {EdgeActor} from "../actors/EdgeActor";
 import {BackgroundActor} from "../actors/BackgroundActor";
 import {VertexActor} from "../actors/VertexActor";
@@ -27,8 +27,11 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
     /**
      * If algorithm requires to select vertex (for example as a root)
      */
-    public static requireSelectVertex(): false|string {
-        return "Dijkstrův algoritmus se spouští z jednoho vrcholu, odkud poté prohledává celý graf pomocí napojených hran. Vyberte tedy prosím jeden vrchol, odkud se má začít";
+    public static requireSelectVertex(): requireSelectVertexInformationInterface[] {
+        return [{
+            text: "Dijkstrův algoritmus se spouští z jednoho vrcholu, odkud poté prohledává celý graf pomocí napojených hran. Vyberte tedy prosím jeden vrchol, odkud se má začít",
+            state: {}
+        }];
     }
 
     /**
@@ -81,12 +84,12 @@ export class DijkstrasAlgorithm extends AbstractAlgorithm{
             });
         });
 
-        this.presenter.setSlideState(this.presenter.selected, {opacity: 1, text: 0});
-        this.var(<VertexActor>this.presenter.selected).h = 0;
+        this.presenter.setSlideState(this.presenter.selected[0], {opacity: 1, text: 0});
+        this.var(<VertexActor>this.presenter.selected[0]).h = 0;
 
         this.presenter.makeSnapShot(5000, "Vrcholy mají také 3 stavy. Nenalezené - ty zobrazujeme nevýrazně, otevřené - ty jsou bílé a uzavřené, ty budou černě orámovány. Ze začátku je tedy pouze počáteční vrchol otevřený.");
 
-        let queue: VertexActor[] = [<VertexActor>this.presenter.selected];
+        let queue: VertexActor[] = [<VertexActor>this.presenter.selected[0]];
 
         // Main cycle
         while (queue.length) {
