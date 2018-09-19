@@ -68,7 +68,7 @@ export class Presenter {
      * the presentation, but only properties, which will be changed during it.
      * Therefore some properties of state, such as position, will not be changed.
      */
-    private defaultStates: object[] = [];
+    public defaultStates: object[] = [];
 
     /**
      * Create a new presentation, needs list of Actors

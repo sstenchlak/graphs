@@ -292,14 +292,26 @@ export class Application {
             selectedActors.push(x.actor);
         }
         this.presenter.selected = selectedActors;
+
+        // Before the presenter made the presentation, we need to set states of
+        // vertices that has been selected and their state has been set there.
+        for (let i in selected) {
+            this.presenter.setSlideState(selected[i].actor, Algorithm.requireSelectVertex()[i].state);
+        }
+
         let result = this.presenter.prepare();
+
+        // After the presenter made the presentation, we need to set the default states.
+        for (let x of selected) {
+            this.presenter.defaultStates[x.actor.actorID] = {...this.presenter.defaultStates[x.actor.actorID], ...x.resetState};
+        }
 
         // Show errors
         if (result !== true) {
             this.presenter = null;
             this.showError(<string>result);
             for (let x of selected) {
-                x.actor.setState(x.resetState, true);
+                x.actor.setState(x.resetState);
             }
             return;
         }
