@@ -39,7 +39,7 @@ Nejjednodušším state updaterem je `simpleMapState`, který je defaultně v to
 
 *Příklad: Původní stav byl `{x: 100}` a nový `{x: 200}`. Ve čtvrtině času, kdy by měla probíhat animace je tedy `progress = 0.25` a funkce `simpleMapState` nastaví stav na `{x: 125}`.*
 
-State updater lze například využít tak, že při změně parametru typu string se písmenka nejprve postupně vymažou po jednom a pak se začne objevovat nový text.
+State updater lze například využít tak, že při změně parametru typu string se písmenka nejprve postupně vymažou po jednom a pak se začne objevovat nový text. `TextActor` využívá State Updater aby mohl animovat čísla ve stringu. Viz. `TextActor`.
 
 Funkce obsažené v `stateChangeHandlers: stateChangeHandlerFunctionInterface[]` jsou volány ještě předtím, než je spuštěna logika funkce `setState` a je jim předán stav. Můžou ho pozměnit, pokud vrátí jiný stav, ale využívají se hlavně pokud nějaký parametr stavu chceme předat jinému herci, například `text` je předán `TextActor`.
 
@@ -67,7 +67,7 @@ Funkce obsažené v `stateChangeHandlers: stateChangeHandlerFunctionInterface[]`
 
 Jednoduchý herec zobrazující text na obrazovce. 
 
-Implementuje vlastní `stateChangeHandler` který řeší animaci textu. Pokud obsahuje string, stav změní okamžitě. Pokud obsahuje číslo, bude ho lineárně animovat.
+Implementuje vlastní `stateChangeHandler` který řeší animaci textu. Pokud obsahuje string, stav změní okamžitě. Pokud obsahuje číslo, bude ho lineárně animovat. V případě, že původní a nový stav se liší pouze čísly v řetězcích, je schopen animovat pouze tyto čísla a text okolo zachovat.
 
 Jako `publicInformation` jsou šířka, výška a příznak, zda obsahuje text.
 

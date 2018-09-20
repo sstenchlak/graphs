@@ -58,9 +58,32 @@ export class TextActor extends AbstractActor {
      * Should take care about animation of states, that can't be animated easily by increasing number or switching text
      */
     private static textActorStateUpdater(oldState, state, newState, progress) {
-        if (newState.hasOwnProperty('text') && typeof newState.text === 'number' && typeof oldState.text === 'number') {
+        if (!newState.hasOwnProperty('text')) return;
+
+        if (typeof newState.text === 'number' && typeof oldState.text === 'number') {
             state.text = Math.round(oldState.text + progress * (newState.text - oldState.text));
         }
+
+        // Number animation in string
+        if (typeof newState.text === 'string' && typeof oldState.text === 'string') {
+            let patternN =  newState.text.replace(/-?[0-9]+/g,'0');
+            let patternO =  oldState.text.replace(/-?[0-9]+/g,'0');
+
+            if (patternN === patternO) {
+                let pattern = patternN.split('0');
+                let oldS = oldState.text.match(/-?[0-9]+/g);
+                let newS = newState.text.match(/-?[0-9]+/g);
+
+                let result = pattern[0];
+                for (let i in oldS) {
+                    result += Math.round(Number(oldS[i]) + progress * (Number(newS[i]) - Number(oldS[i])));
+                    result += pattern[Number(i)+1];
+                }
+
+                state.text = result;
+            }
+        }
+
     }
 
     /**
