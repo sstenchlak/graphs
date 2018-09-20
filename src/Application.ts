@@ -7,6 +7,7 @@ import {Presenter} from "./Presenter";
 import {DijkstrasAlgorithm} from "./algorithm/DijkstrasAlgorithm";
 import {BoruvkasAlgorithm} from "./algorithm/BoruvkasAlgorithm";
 import {AbstractActor} from "./actors/AbstractActor";
+import {FordFulkersonAlgorithm} from "./algorithm/FordFulkersonAlgorithm";
 
 /**
  * Interface for graph which can be loaded through loadGraphFromData()
@@ -90,6 +91,7 @@ export class Application {
      */
     private algorithmsList = [
         BoruvkasAlgorithm,
+        FordFulkersonAlgorithm,
         DijkstrasAlgorithm,
     ];
 

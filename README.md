@@ -181,6 +181,7 @@ Předek všech algoritmů, obsahuje metody, jež by každý algoritmus měl mít
 Jednotlivé třídy implementují algoritmus grafových algoritmů. Obvykle obsahují pomocné metody, například na ukládání proměnných do hran a vrcholů, protože jediná informace o struktuře grafu je obsažena v hercích a stavech herců.
 
 * `BoruvkasAlgorithm` - Borůvkův algoritmus
+* `FordFulkersonAlgorithm` - Fordův-Fulkersonův algoritmus
 * `DijkstrasAlgorithm` - Dijkstrův algoritmus
 
 ### `Application`
