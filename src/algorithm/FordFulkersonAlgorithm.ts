@@ -54,6 +54,20 @@ export class FordFulkersonAlgorithm extends AbstractAlgorithm{
     }
 
     check(): boolean | string {
+        for (let actor of this.presenter.actors) {
+            if (!(actor instanceof EdgeActor))
+                continue;
+
+            if ((typeof actor.getState('text') !== 'number') || Number(actor.getState('text')) < 0) {
+                return "Nastavte prosím všem hranám nějakou nezápornou hodnotu!";
+            }
+
+            if (actor.getState('arrows')[0] || actor.getState('arrows')[1]) {
+                return "Algoritmus aktuálně nefunguje při orientovaných hranách. Než budete pokračovat, odstraňte prosím orientované hrany!";
+            }
+
+        }
+
         return true;
     }
 
